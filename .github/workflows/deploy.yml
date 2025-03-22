@@ -63,4 +63,4 @@ jobs:
             fi
             
             sudo docker pull ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-            sudo docker run --name ${{ env.IMAGE_NAME }}-${{ github.sha }} -d -p 80:8080 --env-file=.env.paytogether ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+            sudo docker run --name ${{ env.IMAGE_NAME }}-${{ github.sha }} -d -p 8080:8080 --env-file=.env.paytogether ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
