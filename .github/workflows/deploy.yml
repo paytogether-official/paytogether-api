@@ -44,8 +44,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ vars.ORGANIZATION_VAR }}/${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ vars.ORGANIZATION_VAR }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ghcr.io/paytogether-official/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/paytogether-official/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.1
