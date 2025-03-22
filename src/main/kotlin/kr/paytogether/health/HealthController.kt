@@ -1,13 +1,12 @@
-package kr.health
+package kr.paytogether.health
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class HealthController {
-
     @GetMapping("/health")
-    fun health(): String {
+    suspend fun health(): String {
         return "OK"
     }
 }
