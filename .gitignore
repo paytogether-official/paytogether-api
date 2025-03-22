@@ -41,3 +41,6 @@ out/
 
 ### Environments ###
 .env
+
+### Database ###
+db/
