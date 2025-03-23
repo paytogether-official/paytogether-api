@@ -21,20 +21,21 @@ data class JourneyCreate(
     @field:NotBlank(message = "title must not be blank")
     val title: String,
 
-    @field:DateTimeFormat(iso = ISO.DATE, pattern = "yyyy-MM-dd")
+    @field:DateTimeFormat(pattern = "yyyy-MM-dd")
     val startDate: LocalDate,
 
-    @field:DateTimeFormat(iso = ISO.DATE, pattern = "yyyy-MM-dd")
+    @field:DateTimeFormat(pattern = "yyyy-MM-dd")
     val endDate: LocalDate,
 
     @field:NotBlank(message = "localeCode must not be blank")
     val localeCode: String,
 
-    @field:Size(min = 0, max = 20, message = "members size must be between 1 and 20")
+    @field:Size(min = 0, max = 30, message = "members size must be between 0 and 30")
     val members: List<JourneyMemberCreate>
 ) {
     init {
-        assert(members.isNameDuplicated()) { "중복된 이름이 존재합니다." }
+        require(!members.hasDuplicateName()) { "중복된 이름이 존재합니다." }
+        require(startDate.isBefore(endDate)) { "시작일은 종료일보다 이전이어야 합니다." }
     }
 
     fun toEntity() = Journey(
@@ -55,5 +56,6 @@ data class JourneyCreate(
         return hashHex.substring(0, 8)
     }
 
-    private fun List<JourneyMemberCreate>.isNameDuplicated() = this.size != this.distinctBy { it.name }.size
+    private fun List<JourneyMemberCreate>.hasDuplicateName() =
+        this.groupingBy { it.name }.eachCount().any { it.value > 1 }
 }
