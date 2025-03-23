@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kr.paytogether.journey.dto.*
 import kr.paytogether.journey.repository.*
+import kr.paytogether.shared.exception.NotFoundException
 
 @Service
 class JourneyService(
@@ -22,5 +23,21 @@ class JourneyService(
         }
 
         return JourneyResponse.of(journey, members)
+    }
+
+    suspend fun getJourney(slug: String): JourneyResponse {
+        val journey = journeyRepository.findBySlug(slug) ?: throw NotFoundException("Journey not found by slug: $slug")
+        val members = journeyMemberRepository.findByJourneyId(journey.journeyId!!).map { JourneyMemberResponse.from(it) }.toList()
+        return JourneyResponse.of(journey, members)
+    }
+
+    suspend fun getJourneys(slugs: List<String>): List<JourneyResponse> {
+        val journeys = journeyRepository.findBySlugIn(slugs)
+        val memberMap = journeyMemberRepository.findByJourneyIdIn(journeys.map { it.journeyId!! }).groupBy { it.journeyId }
+
+        return journeys.map { journey ->
+            val members = memberMap[journey.journeyId!!]?.map { JourneyMemberResponse.from(it) } ?: emptyList()
+            JourneyResponse.of(journey, members)
+        }
     }
 }

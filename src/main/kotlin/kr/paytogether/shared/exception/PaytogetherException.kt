@@ -28,12 +28,11 @@ data class BadRequestException(
 )
 
 data class NotFoundException(
-    override val errorCode: ErrorCode,
     override val message: String,
     override val details: String? = null,
     override val data: Any? = null,
 ): PaytogetherException(
-    errorCode = errorCode,
+    errorCode = ErrorCode.BAD_REQUEST,
     message = message,
     status = HttpStatus.NOT_FOUND,
     details = details,
@@ -41,12 +40,11 @@ data class NotFoundException(
 )
 
 data class ConflictException(
-    override val errorCode: ErrorCode,
     override val message: String,
     override val details: String? = null,
     override val data: Any? = null,
 ): PaytogetherException(
-    errorCode = errorCode,
+    errorCode = ErrorCode.BAD_REQUEST,
     message = message,
     status = HttpStatus.CONFLICT,
     details = details,
