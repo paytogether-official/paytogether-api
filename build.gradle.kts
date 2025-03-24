@@ -18,6 +18,8 @@ repositories {
     mavenCentral()
 }
 
+val resilience4jVersion by extra { "1.7.0" }
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -26,9 +28,28 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.4")
+
+    // feign
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("io.github.openfeign:feign-kotlin:13.4")
+    implementation("io.github.openfeign:feign-slf4j:9.3.1")
+    implementation("io.github.openfeign:feign-gson:9.4.0")
+
+    // resilience4j
+    implementation("io.github.resilience4j:resilience4j-kotlin:$resilience4jVersion")
+    implementation("io.github.resilience4j:resilience4j-retry:$resilience4jVersion")
+    implementation("io.github.resilience4j:resilience4j-ratelimiter:$resilience4jVersion")
+
+    // db
 //    runtimeOnly("org.postgresql:postgresql")
 //    runtimeOnly("org.postgresql:r2dbc-postgresql")
     runtimeOnly("com.github.jasync-sql:jasync-r2dbc-mysql:2.2.4")
+
+    // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

@@ -13,6 +13,12 @@ spring:
       validation-query: SELECT 1
       max-idle-time: 30m
 
+paytogether:
+  feign:
+    twelvedata:
+      url: https://api.twelvedata.com
+      api-key: ${TWELVE_DATA_API_KEY}
+
 logging:
   level:
     org.springframework.r2dbc.core: debug
