@@ -1,5 +1,6 @@
 package kr.paytogether.exchange.dto
 
+import kr.paytogether.exchange.entity.ExchangeRate
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -12,6 +13,10 @@ data class ExchangeResponse(
 ) {
 
     companion object {
-        fun empty(date: LocalDate, currency: String) = ExchangeResponse(date, currency, null)
+        fun from(exchangeRate: ExchangeRate) = ExchangeResponse(
+            date = exchangeRate.date,
+            currency = exchangeRate.baseCurrency,
+            exchangeRate = exchangeRate.rate.stripTrailingZeros()
+        )
     }
 }

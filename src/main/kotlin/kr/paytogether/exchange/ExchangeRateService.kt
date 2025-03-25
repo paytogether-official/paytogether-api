@@ -10,40 +10,24 @@ import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateSuccess
 import kr.paytogether.exchange.repository.ExchangeRateRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 import java.time.LocalDate
 
 @Service
 class ExchangeRateService(
-    private val exchangeRepository: ExchangeRepository,
     private val exchangeRateRepository: ExchangeRateRepository,
 ) {
-    suspend fun getExchangeRatesByCurrencies(currencies: List<String>) = exchangeRepository.findLatestByCurrencies(currencies)
-        .map {
-            ExchangeResponse(
-                date = it.date,
-                currency = it.currency,
-                exchangeRate = it.exchangeRate.replace(",", "").toBigDecimalOrNull()
-            )
-        }
+    suspend fun getExchangeRatesByCurrencies(currencies: List<String>) = exchangeRateRepository.findLatestByCurrencies(currencies)
+        .map { ExchangeResponse.from(it) }
 
-    suspend fun getExchangeRates() = exchangeRepository.findLatest().map {
-        ExchangeResponse(
-            date = it.date,
-            currency = it.currency,
-            exchangeRate = it.exchangeRate.replace(",", "").toBigDecimalOrNull()
-        )
-    }
+    suspend fun getExchangeRates() = exchangeRateRepository.findLatest()
+        .map { ExchangeResponse.from(it) }
 
     suspend fun getExchangeRate(currency: String): ExchangeResponse {
-        val exchange = exchangeRepository.findTopByCurrencyOrderByDateDesc(currency)
+        val exchange = exchangeRateRepository.findTopByBaseCurrencyOrderByDateDesc(currency)
         return ExchangeResponse(
             date = exchange?.date,
             currency = currency,
-            exchangeRate = exchange
-                ?.exchangeRate
-                ?.replace(",", "")
-                ?.toBigDecimalOrNull()
+            exchangeRate = exchange?.rate?.stripTrailingZeros()
         )
     }
 
