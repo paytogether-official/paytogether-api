@@ -11,6 +11,7 @@ import kr.paytogether.shared.exception.ErrorCode
 import kr.paytogether.shared.exception.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 
 @Service
 class JourneyExpenseService(
@@ -87,13 +88,26 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpense(journeyId: String, journeyExpenseId: Long): JourneyExpenseResponse {
+    suspend fun getExpense(journeyId: String, journeyExpenseId: Long): JourneyExpenseWithMembersResponse {
         val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseId(journeyId, journeyExpenseId)
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
 
-        return JourneyExpenseResponse.of(
+        require(expense.journeyExpenseId != null) { "Expense id is null" }
+        val ledgers = journeyMemberLedgerRepository.findByJourneyExpenseId(expense.journeyExpenseId)
+        val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
+
+        return JourneyExpenseWithMembersResponse.of(
             expense = expense,
-            payerName = journeyMemberRepository.findById(expense.expensePayerId)?.name ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
+            payerName = journeyMemberRepository.findById(expense.expensePayerId)?.name
+                ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
+            members = ledgers
+                .filter { it.amount < BigDecimal.ZERO }
+                .map {
+                JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
+                    ledger = it,
+                    name = memberMap[it.journeyMemberId]?.name ?: throw NotFoundException("Member not found by id: ${it.journeyMemberId}"),
+                )
+            }
         )
     }
 
