@@ -5,7 +5,9 @@ import java.math.BigDecimal
 import java.time.LocalDate
 
 data class JourneyExpenseResponse(
-    val slug: String,
+    val journeyExpenseId: Long,
+
+    val journeyId: String,
 
     val payerName: String,
 
@@ -20,13 +22,14 @@ data class JourneyExpenseResponse(
     val memo: String,
 ) {
     companion object {
-        fun of(expense: JourneyExpense, slug: String, payerName: String) = JourneyExpenseResponse(
-            slug = slug,
+        fun of(expense: JourneyExpense, payerName: String) = JourneyExpenseResponse(
+            journeyExpenseId = expense.journeyExpenseId!!,
+            journeyId = expense.journeyId,
             payerName = payerName,
             expenseDate = expense.expenseDate,
             category = expense.category,
             currency = expense.currency,
-            amount = expense.amount,
+            amount = expense.amount.stripTrailingZeros(),
             memo = expense.memo,
         )
     }

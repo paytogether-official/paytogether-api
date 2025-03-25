@@ -1,6 +1,8 @@
 package kr.paytogether.journey
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kr.paytogether.journey.dto.*
 import kr.paytogether.journey.entity.JourneyMemberLedger
 import kr.paytogether.journey.repository.*
@@ -19,10 +21,12 @@ class JourneyExpenseService(
 ) {
 
     @Transactional
-    suspend fun createExpense(slug: String, create: JourneyExpenseCreate): JourneyExpenseResponse {
-        val journey = journeyRepository.findBySlug(slug) ?: throw NotFoundException("Journey not found by slug: $slug")
-        require(journey.journeyId != null) { "Journey id is null" }
-        val memberMap = journeyMemberRepository.findByJourneyId(journey.journeyId).associateBy { it.name }
+    suspend fun createExpense(journeyId: String, create: JourneyExpenseCreate): JourneyExpenseResponse {
+        if (journeyRepository.existsByJourneyId(journeyId).not()) {
+            throw NotFoundException("Journey not found by id: $journeyId")
+        }
+
+        val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.name }
         val payer = memberMap[create.payerName] ?: throw NotFoundException("Payer not found by name: ${create.payerName}")
         require(payer.journeyMemberId != null) { "Payer id is null" }
 
@@ -40,12 +44,12 @@ class JourneyExpenseService(
                 "Amount is not matched, expected: ${create.amount}, actual: ${create.members.sumOf { it.amount }}"
             )
 
-        val expense = journeyExpenseRepository.save(create.toEntity(journey.journeyId, payer.journeyMemberId))
+        val expense = journeyExpenseRepository.save(create.toEntity(journeyId, payer.journeyMemberId))
         require(expense.journeyExpenseId != null) { "Expense id is null" }
 
         val ledgers = listOf(
             JourneyMemberLedger(
-                journeyId = journey.journeyId,
+                journeyId = journeyId,
                 journeyMemberId = payer.journeyMemberId,
                 journeyExpenseId = expense.journeyExpenseId,
                 amount = expense.amount,
@@ -54,7 +58,7 @@ class JourneyExpenseService(
         ) + create.members.map {
             val member = memberMap[it.name] ?: throw NotFoundException("Member not found by name: ${it.name}")
             JourneyMemberLedger(
-                journeyId = journey.journeyId,
+                journeyId = journeyId,
                 journeyMemberId = member.journeyMemberId!!,
                 journeyExpenseId = expense.journeyExpenseId,
                 amount = -it.amount,
@@ -64,6 +68,33 @@ class JourneyExpenseService(
 
         journeyMemberLedgerRepository.saveAll(ledgers).collect()
 
-        return JourneyExpenseResponse.of(expense, journey.slug, payer.name)
+        return JourneyExpenseResponse.of(expense, payer.name)
     }
+
+    @Transactional(readOnly = true)
+    suspend fun getExpenses(journeyId: String): Flow<JourneyExpenseResponse> {
+        if (journeyRepository.existsByJourneyId(journeyId).not()) {
+            throw NotFoundException("Journey not found by id: $journeyId")
+        }
+        val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
+
+        return journeyExpenseRepository.findByJourneyId(journeyId).map {
+            JourneyExpenseResponse.of(
+                expense = it,
+                payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
+            )
+        }
+    }
+
+    @Transactional(readOnly = true)
+    suspend fun getExpense(journeyId: String, journeyExpenseId: Long): JourneyExpenseResponse {
+        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseId(journeyId, journeyExpenseId)
+            ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
+
+        return JourneyExpenseResponse.of(
+            expense = expense,
+            payerName = journeyMemberRepository.findById(expense.expensePayerId)?.name ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
+        )
+    }
+
 }

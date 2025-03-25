@@ -11,7 +11,7 @@ data class JourneyMemberLedger(
     @Id
     val journeyMemberLedgerId: Long? = null,
 
-    val journeyId: Long,
+    val journeyId: String,
 
     val journeyMemberId: Long,
 

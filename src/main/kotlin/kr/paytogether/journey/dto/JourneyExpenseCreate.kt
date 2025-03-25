@@ -19,7 +19,7 @@ data class JourneyExpenseCreate(
 
     val members: List<JourneyLedgerCreate>,
 ) {
-    fun toEntity(journeyId: Long, expensePayerId: Long): JourneyExpense {
+    fun toEntity(journeyId: String, expensePayerId: Long): JourneyExpense {
         return JourneyExpense(
             journeyId = journeyId,
             expensePayerId = expensePayerId,

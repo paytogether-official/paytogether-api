@@ -38,7 +38,8 @@ data class JourneyCreate(
         require(startDate.isBefore(endDate)) { "시작일은 종료일보다 이전이어야 합니다." }
     }
 
-    fun toEntity() = Journey(
+    fun toEntity(slug: String) = Journey(
+        journeyId = slug,
         baseCurrency = baseCurrency,
         quoteCurrency = quoteCurrency,
         exchangeRate = exchangeRate,
@@ -46,15 +47,7 @@ data class JourneyCreate(
         startDate = startDate,
         endDate = endDate,
         localeCode = localeCode,
-        slug = generateSlug(),
     )
-
-    private fun generateSlug(): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        val hashBytes = md.digest(Instant.now().toEpochMilli().toString().toByteArray())
-        val hashHex = hashBytes.joinToString("") { "%02x".format(it) }
-        return hashHex.substring(0, 8)
-    }
 
     private fun List<JourneyMemberCreate>.hasDuplicateName() =
         this.groupingBy { it.name }.eachCount().any { it.value > 1 }

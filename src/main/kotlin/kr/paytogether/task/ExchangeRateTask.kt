@@ -23,7 +23,7 @@ class ExchangeRateTask(
 
 //     @Scheduled(fixedDelay = 6000000) //  for Test
     // 0시 10분, 6시 10분, 12시 10분, 18시 10분에 실행
-    @Scheduled(cron = "0 10 0,6,12,18 * * *")
+//    @Scheduled(cron = "0 10 0,6,12,18 * * *")
     suspend fun collectExchangeRate() = runCatching {
         val todayExistsCurrencySet = exchangeRateRepository.findByDate(LocalDate.now())
             .map { it.baseCurrency }

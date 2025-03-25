@@ -7,7 +7,7 @@ data class JourneyMemberCreate(
     @field:NotBlank(message = "name must not be blank")
     val name: String
 ) {
-    fun toEntity(journeyId: Long) = JourneyMember(
+    fun toEntity(journeyId: String) = JourneyMember(
         journeyId = journeyId,
         name = name
     )

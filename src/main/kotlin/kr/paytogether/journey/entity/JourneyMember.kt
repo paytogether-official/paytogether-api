@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 data class JourneyMember(
     @Id val journeyMemberId: Long? = null,
 
-    val journeyId: Long,
+    val journeyId: String,
 
     val name: String,
 

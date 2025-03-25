@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 data class JourneyExpense(
     @Id val journeyExpenseId: Long? = null,
 
-    val journeyId: Long,
+    val journeyId: String,
 
     val expensePayerId: Long,
 

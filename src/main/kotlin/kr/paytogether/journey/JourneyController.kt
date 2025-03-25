@@ -15,19 +15,30 @@ class JourneyController(
         @RequestBody @Valid create: JourneyCreate
     ) = journeyService.createJourney(create)
 
-    @GetMapping("/journeys/{slug:[a-z0-9-]+}")
+    @GetMapping("/journeys/{journeyId:[a-z0-9]+}")
     suspend fun getJourney(
-        @PathVariable slug: String
-    ) = journeyService.getJourney(slug)
+        @PathVariable journeyId: String
+    ) = journeyService.getJourney(journeyId)
 
-    @GetMapping("/journeys/{slugs}")
+    @GetMapping("/journeys")
     suspend fun getJourneys(
-        @PathVariable slugs: List<String>
-    ) = journeyService.getJourneys(slugs)
+        @RequestParam journeyIds: List<String>
+    ) = journeyService.getJourneys(journeyIds)
 
-    @PostMapping("/journeys/{slug:[a-z0-9-]+}/expenses")
+    @PostMapping("/journeys/{journeyId:[a-z0-9]+}/expenses")
     suspend fun createExpense(
-        @PathVariable slug: String,
+        @PathVariable journeyId: String,
         @RequestBody @Valid create: JourneyExpenseCreate,
-    ) = journeyExpenseService.createExpense(slug, create)
+    ) = journeyExpenseService.createExpense(journeyId, create)
+
+    @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses")
+    suspend fun getJourneyExpenses(
+        @PathVariable journeyId: String,
+    ) = journeyExpenseService.getExpenses(journeyId)
+
+    @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
+    suspend fun getJourneyExpense(
+        @PathVariable journeyId: String,
+        @PathVariable expenseId: Long,
+    ) = journeyExpenseService.getExpense(journeyId, expenseId)
 }

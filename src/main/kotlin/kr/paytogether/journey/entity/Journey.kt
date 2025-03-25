@@ -2,6 +2,7 @@ package kr.paytogether.journey.entity
 
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
+import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -9,9 +10,7 @@ import java.time.LocalDateTime
 
 @Table("journey")
 data class Journey(
-    @Id val journeyId: Long? = null,
-
-    val slug: String,
+    @Id val journeyId: String,
 
     val baseCurrency: String,
 
