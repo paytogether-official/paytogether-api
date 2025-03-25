@@ -1,5 +1,8 @@
 package kr.paytogether.exchange
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kr.paytogether.task.ExchangeRateTask
 import org.springframework.web.bind.annotation.*
 
@@ -23,5 +26,12 @@ class ExchangeRateController(
     ) = exchangeService.getExchangeRatesByCurrencies(currencies)
 
     @PostMapping("/exchange-rates/collect")
-    suspend fun collectExchangeRates() = task.collectExchangeRate()
+    suspend fun collectExchangeRates(): String {
+        CoroutineScope(Dispatchers.Default).launch {
+            task.collectExchangeRate()
+        }
+
+        return "Exchange rates collection started"
+    }
+
 }
