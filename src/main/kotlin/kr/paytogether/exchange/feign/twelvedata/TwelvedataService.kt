@@ -1,5 +1,6 @@
 package kr.paytogether.exchange.feign.twelvedata
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.kotlin.ratelimiter.executeSuspendFunction
 import io.github.resilience4j.kotlin.ratelimiter.rateLimiter
 import io.github.resilience4j.ratelimiter.RateLimiter
@@ -16,6 +17,8 @@ import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateResponse
 class TwelvedataService(
     private val twelvedataRest: TwelvedataRest,
 ) {
+    private val logger = KotlinLogging.logger {}
+
     // 1분에 8개씩 요청 가능
     private val rateLimiter = RateLimiterConfig.custom()
         .limitForPeriod(1)
@@ -26,9 +29,10 @@ class TwelvedataService(
     suspend fun getExchangeRates(
         symbols: List<String>,
         date: LocalDate = LocalDate.now(),
-    ): List<ExchangeRateSuccess> =
+    ) =
         symbols
-            .chunked(8)
+            .windowed(8, 8, true)
+            .onEach { logger.info { "Requesting exchange rates for ${it.joinToString(", ")}" } }
             .map { chunk ->
                 val query = ExchangeRateQuery(
                     symbol = chunk.joinToString(","),
