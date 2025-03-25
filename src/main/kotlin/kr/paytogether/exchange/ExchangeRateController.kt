@@ -1,10 +1,12 @@
 package kr.paytogether.exchange
 
+import kr.paytogether.task.ExchangeRateTask
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class ExchangeRateController(
     private val exchangeService: ExchangeRateService,
+    private val task: ExchangeRateTask,
 ) {
     @GetMapping("/exchange-rate")
     suspend fun getExchangeRate(
@@ -19,4 +21,7 @@ class ExchangeRateController(
     suspend fun getExchangeRatesByCurrencies(
         @PathVariable currencies: List<String>,
     ) = exchangeService.getExchangeRatesByCurrencies(currencies)
+
+    @PostMapping("/exchange-rates/collect")
+    suspend fun collectExchangeRates() = task.collectExchangeRate()
 }
