@@ -3,7 +3,7 @@ package kr.paytogether.exchange.feign.twelvedata.dto
 import java.time.LocalDate
 
 data class ExchangeRateQuery(
-    val symbols: List<String>,
+    val symbol: String,
 
     val date: LocalDate,
 

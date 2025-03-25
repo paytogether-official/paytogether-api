@@ -8,22 +8,18 @@ import java.math.BigDecimal
  * "timestamp": 1742799600
  */
 
-sealed class ExchangeRateResponse
+data class ExchangeRateResponse(
+    val symbol: String? = null,
+    val rate: BigDecimal? = null,
+    val timestamp: Long? = null,
 
-data class ExchangeRateError(
-    val code: Int,
-    val message: String,
-    val status: String,
-) : ExchangeRateResponse()
+    val code: Int? = null,
+    val message: String? = null,
+    val status: String? = null,
+)
 
 data class ExchangeRateSuccess(
     val symbol: String,
     val rate: BigDecimal,
     val timestamp: Long,
-) : ExchangeRateResponse()
-
-//data class ExchangeRateResponse(
-//    val symbol: String,
-//    val rate: BigDecimal,
-//    val timestamp: Long,
-//)
+)

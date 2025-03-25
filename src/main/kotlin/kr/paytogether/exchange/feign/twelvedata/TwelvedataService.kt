@@ -1,5 +1,6 @@
 package kr.paytogether.exchange.feign.twelvedata
 
+import io.github.resilience4j.kotlin.ratelimiter.executeSuspendFunction
 import io.github.resilience4j.kotlin.ratelimiter.rateLimiter
 import io.github.resilience4j.ratelimiter.RateLimiter
 import io.github.resilience4j.ratelimiter.RateLimiterConfig
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
 import kotlinx.coroutines.flow.*
+import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateResponse
 
 @Service
 class TwelvedataService(
@@ -16,7 +18,7 @@ class TwelvedataService(
 ) {
     // 1분에 8개씩 요청 가능
     private val rateLimiter = RateLimiterConfig.custom()
-        .limitForPeriod(8)
+        .limitForPeriod(1)
         .limitRefreshPeriod(Duration.ofMinutes(1))
         .timeoutDuration(Duration.ofMinutes(5))
         .build().let { RateLimiter.of("twelvedata", it) }
@@ -24,21 +26,25 @@ class TwelvedataService(
     suspend fun getExchangeRates(
         symbols: List<String>,
         date: LocalDate = LocalDate.now(),
-    ): List<ExchangeRateSuccess> {
-        return symbols
+    ): List<ExchangeRateSuccess> =
+        symbols
             .chunked(8)
-            .asFlow()
-            .rateLimiter(rateLimiter)
             .map { chunk ->
                 val query = ExchangeRateQuery(
-                    symbols = chunk,
+                    symbol = chunk.joinToString(","),
                     date = date,
                 )
-                twelvedataRest.getExchangeRate(query).values
-                    .filterIsInstance<ExchangeRateSuccess>()
+                rateLimiter.executeSuspendFunction {
+                    val res = twelvedataRest.getExchangeRate(query)
+                    return@executeSuspendFunction res
+                }.values
+                    .mapNotNull {
+                        if (it.symbol != null) ExchangeRateSuccess(
+                            symbol = it.symbol,
+                            rate = it.rate!!,
+                            timestamp = it.timestamp!!
+                        ) else null
+                    }
             }
-            .toList()
             .flatten()
-    }
-
 }
