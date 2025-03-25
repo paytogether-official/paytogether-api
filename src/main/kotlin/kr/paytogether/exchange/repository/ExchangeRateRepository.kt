@@ -12,7 +12,7 @@ interface ExchangeRateRepository: CoroutineCrudRepository<ExchangeRate, Long> {
     suspend fun findByDate(date: LocalDate): Flow<ExchangeRate>
 
     @Query("""
-        SELECT *
+        SELECT b.*
         FROM (SELECT base_currency, MAX(date) max_date
               FROM exchange_rate
               GROUP BY base_currency) a
@@ -22,7 +22,7 @@ interface ExchangeRateRepository: CoroutineCrudRepository<ExchangeRate, Long> {
     suspend fun findLatest(): Flow<ExchangeRate>
 
     @Query("""
-        SELECT *
+        SELECT b.*
         FROM (SELECT base_currency, MAX(date) max_date
               FROM exchange_rate
               GROUP BY base_currency) a
