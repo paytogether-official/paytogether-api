@@ -22,7 +22,7 @@ class TwelvedataService(
     // 1분에 8개씩 요청 가능
     private val rateLimiter = RateLimiterConfig.custom()
         .limitForPeriod(1)
-        .limitRefreshPeriod(Duration.ofMinutes(1))
+        .limitRefreshPeriod(Duration.ofMinutes(2))
         .timeoutDuration(Duration.ofMinutes(5))
         .build().let { RateLimiter.of("twelvedata", it) }
 
