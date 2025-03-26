@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import kr.paytogether.journey.dto.JourneyCreate
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -49,4 +50,11 @@ class JourneyController(
         @PathVariable expenseId: Long,
         @Valid @RequestBody update: JourneyExpenseUpdate,
     ) = journeyExpenseService.updateExpense(journeyId, expenseId, update)
+
+    @DeleteMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun deleteExpense(
+        @PathVariable journeyId: String,
+        @PathVariable expenseId: Long,
+    ) = journeyExpenseService.deleteExpense(journeyId, expenseId)
 }

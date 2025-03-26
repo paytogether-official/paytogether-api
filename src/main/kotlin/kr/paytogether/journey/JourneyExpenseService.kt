@@ -175,4 +175,13 @@ class JourneyExpenseService(
         return JourneyExpenseResponse.of(updatedExpense, payer.name)
     }
 
+    @Transactional
+    suspend fun deleteExpense(journeyId: String, journeyExpenseId: Long) {
+        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseId(journeyId, journeyExpenseId)
+            ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
+        require(expense.journeyExpenseId != null) { "Expense id is null" }
+        journeyMemberLedgerRepository.deleteByJourneyExpenseId(expense.journeyExpenseId)
+        journeyExpenseRepository.deleteById(expense.journeyExpenseId)
+    }
+
 }
