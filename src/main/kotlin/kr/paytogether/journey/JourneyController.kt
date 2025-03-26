@@ -27,6 +27,11 @@ class JourneyController(
         @RequestParam journeyIds: List<String>
     ) = journeyService.getJourneys(journeyIds)
 
+    @PostMapping("/journeys/{journeyId:[a-z0-9]+}/close")
+    suspend fun closeJourney(
+        @PathVariable journeyId: String
+    ) = journeyService.closeJourney(journeyId)
+
     @PostMapping("/journeys/{journeyId:[a-z0-9]+}/expenses")
     suspend fun createExpense(
         @PathVariable journeyId: String,

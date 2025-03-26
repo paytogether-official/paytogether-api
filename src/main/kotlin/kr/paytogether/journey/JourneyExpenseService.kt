@@ -1,8 +1,6 @@
 package kr.paytogether.journey
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kr.paytogether.journey.dto.*
 import kr.paytogether.journey.entity.JourneyMemberLedger
 import kr.paytogether.journey.repository.*
@@ -73,7 +71,7 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenses(journeyId: String): Flow<JourneyExpenseResponse> {
+    suspend fun getExpenses(journeyId: String): List<JourneyExpenseResponse> {
         if (journeyRepository.existsByJourneyId(journeyId).not()) {
             throw NotFoundException("Journey not found by id: $journeyId")
         }
@@ -93,7 +91,7 @@ class JourneyExpenseService(
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
 
         require(expense.journeyExpenseId != null) { "Expense id is null" }
-        val ledgers = journeyMemberLedgerRepository.findByJourneyExpenseId(expense.journeyExpenseId)
+        val ledgers = journeyMemberLedgerRepository.findByJourneyExpenseIdAndDeletedAtIsNull(expense.journeyExpenseId)
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
 
         return JourneyExpenseWithMembersResponse.of(

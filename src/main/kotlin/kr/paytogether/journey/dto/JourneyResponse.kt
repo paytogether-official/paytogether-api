@@ -22,6 +22,8 @@ data class JourneyResponse(
 
     val localeCode: String,
 
+    val journeySettlementId: Long? = null,
+
     val closedAt: LocalDateTime?,
 
     val createdAt: LocalDateTime,

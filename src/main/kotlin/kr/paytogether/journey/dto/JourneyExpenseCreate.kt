@@ -1,7 +1,9 @@
 package kr.paytogether.journey.dto
 
+import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.PositiveOrZero
 import kr.paytogether.journey.entity.JourneyExpense
 import org.hibernate.validator.constraints.*
 import org.springframework.format.annotation.DateTimeFormat
@@ -22,6 +24,8 @@ data class JourneyExpenseCreate(
     val currency: String,
 
     @field:NotNull
+    @field:PositiveOrZero
+    @field:Max(1_000_000_000)
     val amount: BigDecimal,
 
     @field:Length(max = 25)
