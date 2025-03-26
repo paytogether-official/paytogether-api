@@ -3,6 +3,7 @@ package kr.paytogether.journey
 import jakarta.validation.Valid
 import kr.paytogether.journey.dto.JourneyCreate
 import kr.paytogether.journey.dto.JourneyExpenseCreate
+import kr.paytogether.journey.dto.JourneyExpenseUpdate
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -28,7 +29,7 @@ class JourneyController(
     @PostMapping("/journeys/{journeyId:[a-z0-9]+}/expenses")
     suspend fun createExpense(
         @PathVariable journeyId: String,
-        @RequestBody @Valid create: JourneyExpenseCreate,
+        @Valid @RequestBody create: JourneyExpenseCreate,
     ) = journeyExpenseService.createExpense(journeyId, create)
 
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses")
@@ -41,4 +42,11 @@ class JourneyController(
         @PathVariable journeyId: String,
         @PathVariable expenseId: Long,
     ) = journeyExpenseService.getExpense(journeyId, expenseId)
+
+    @PatchMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
+    suspend fun updateExpense(
+        @PathVariable journeyId: String,
+        @PathVariable expenseId: Long,
+        @Valid @RequestBody update: JourneyExpenseUpdate,
+    ) = journeyExpenseService.updateExpense(journeyId, expenseId, update)
 }

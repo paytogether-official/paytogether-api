@@ -23,4 +23,6 @@ data class JourneyMemberLedger(
 
     @CreatedDate
     val createdAt: LocalDateTime? = null,
+
+    val deletedAt: LocalDateTime? = null,
 )

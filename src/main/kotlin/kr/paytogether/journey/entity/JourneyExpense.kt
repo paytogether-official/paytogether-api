@@ -2,6 +2,7 @@ package kr.paytogether.journey.entity
 
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -24,6 +25,12 @@ data class JourneyExpense(
     val amount: BigDecimal,
 
     val memo: String,
+
+    val deletedAt: LocalDateTime? = null,
+
+    @CreatedDate
+    @LastModifiedDate
+    val updatedAt: LocalDateTime? = null,
 
     @CreatedDate
     val createdAt: LocalDateTime? = null,
