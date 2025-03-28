@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY build/libs/*.jar paytogether.jar
 
-ARG PORT=8080
+ARG PORT=80
 ENV PORT ${PORT}
 EXPOSE ${PORT}
 
