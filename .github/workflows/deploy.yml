@@ -55,7 +55,7 @@ jobs:
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: 22
           script: |
-            CONTAINER_ID=$(sudo docker ps -q --filter "publish=8080")
+            CONTAINER_ID=$(sudo docker ps -q --filter "publish=80")
 
             if [ ! -z "$CONTAINER_ID" ]; then
             sudo docker stop $CONTAINER_ID
