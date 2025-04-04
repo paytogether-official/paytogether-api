@@ -77,7 +77,7 @@ class JourneyExpenseService(
         }
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
 
-        return journeyExpenseRepository.findByJourneyId(journeyId).map {
+        return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).map {
             JourneyExpenseResponse.of(
                 expense = it,
                 payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
@@ -87,7 +87,7 @@ class JourneyExpenseService(
 
     @Transactional(readOnly = true)
     suspend fun getExpense(journeyId: String, journeyExpenseId: Long): JourneyExpenseWithMembersResponse {
-        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseId(journeyId, journeyExpenseId)
+        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, journeyExpenseId)
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
 
         require(expense.journeyExpenseId != null) { "Expense id is null" }
@@ -111,7 +111,7 @@ class JourneyExpenseService(
 
     @Transactional
     suspend fun updateExpense(journeyId: String, expenseId: Long, update: JourneyExpenseUpdate): JourneyExpenseResponse {
-        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseId(journeyId, expenseId)
+        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, expenseId)
             ?: throw NotFoundException("Expense not found by id: $expenseId")
         require(expense.journeyExpenseId != null) { "Expense id is null" }
         journeyMemberLedgerRepository.deleteByJourneyExpenseId(expense.journeyExpenseId)
@@ -175,7 +175,7 @@ class JourneyExpenseService(
 
     @Transactional
     suspend fun deleteExpense(journeyId: String, journeyExpenseId: Long) {
-        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseId(journeyId, journeyExpenseId)
+        val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, journeyExpenseId)
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
         require(expense.journeyExpenseId != null) { "Expense id is null" }
         journeyMemberLedgerRepository.deleteByJourneyExpenseId(expense.journeyExpenseId)

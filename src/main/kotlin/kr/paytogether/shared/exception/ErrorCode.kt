@@ -8,4 +8,6 @@ enum class ErrorCode(val code: HttpStatus) {
     BAD_REQUEST(HttpStatus.BAD_REQUEST),
 
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST),
+
+    DUPLICATE(HttpStatus.CONFLICT),
 }

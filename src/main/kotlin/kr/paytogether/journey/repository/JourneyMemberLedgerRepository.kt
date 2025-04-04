@@ -6,7 +6,7 @@ import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
-interface JourneyMemberLedgerRepository : CoroutineCrudRepository<JourneyMemberLedger,Long> {
+interface JourneyMemberLedgerRepository : CoroutineCrudRepository<JourneyMemberLedger, Long> {
     suspend fun findByJourneyExpenseIdAndDeletedAtIsNull(journeyExpenseId: Long): List<JourneyMemberLedger>
 
     @Query("""

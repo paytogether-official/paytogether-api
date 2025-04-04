@@ -9,9 +9,12 @@ import kr.paytogether.journey.dto.*
 import kr.paytogether.journey.entity.JourneySettlement
 import kr.paytogether.journey.projection.JourneyLedgerSumProjection
 import kr.paytogether.journey.repository.*
+import kr.paytogether.shared.exception.BadRequestException
+import kr.paytogether.shared.exception.ErrorCode.*
 import kr.paytogether.shared.exception.NotFoundException
 import kr.paytogether.shared.utils.isZero
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.LocalDateTime
@@ -20,9 +23,9 @@ import java.time.LocalDateTime
 class JourneyService(
     private val journeyRepository: JourneyRepository,
     private val journeyMemberRepository: JourneyMemberRepository,
-    private val journeyExpenseRepository: JourneyExpenseRepository,
     private val journeySettlementRepository: JourneySettlementRepository,
     private val journeyMemberLedgerRepository: JourneyMemberLedgerRepository,
+    private val journeyExpenseRepository: JourneyExpenseRepository,
 ) {
 
     @Transactional
@@ -58,9 +61,11 @@ class JourneyService(
     @Transactional
     suspend fun closeJourney(journeyId: String) {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
-        val expense = journeyExpenseRepository.findByJourneyId(journey.journeyId).toList()
-        val members = journeyMemberRepository.findByJourneyId(journey.journeyId)
         val ledgers = journeyMemberLedgerRepository.findJourneyLedgerSum(journey.journeyId).map { JourneyLedgerSum.from(it) }
+
+        if (journeySettlementRepository.existsByJourneyId(journeyId)) {
+            throw BadRequestException(DUPLICATE, "Journey already settled for journeyId: $journeyId")
+        }
 
         // 양수면 받게될 금액(채권), 음수면 지불해야할 금액(채무)
         val creditors = ledgers.filter { it.amount > BigDecimal.ZERO }.sortedByDescending { it.amount }.toMutableList()
@@ -112,6 +117,38 @@ class JourneyService(
 
         // 여정 종료
         journeyRepository.save(journey.copy(closedAt = LocalDateTime.now()))
+    }
+
+    suspend fun getSettlement(journeyId: String): JourneySettlementResultResponse {
+        val settlement = journeySettlementRepository.findByJourneyId(journeyId)
+        if (settlement.isEmpty()) {
+            throw NotFoundException("Settlement not found by journeyId: $journeyId")
+        }
+        val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
+        val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
+        val totalAmount = expenses.sumOf { it.amount }
+        return JourneySettlementResultResponse.of(
+            journeyId = journeyId,
+            settlements = settlement.map {
+                JourneySettlementResponse.of(
+                    settlement = it,
+                    fromMemberName = memberMap[it.fromMemberId]?.name
+                        ?: throw NotFoundException("Member not found by memberId: ${it.fromMemberId}"),
+                    toMemberName = memberMap[it.toMemberId]?.name
+                        ?: throw NotFoundException("Member not found by memberId: ${it.toMemberId}")
+                )
+            },
+            expenseCategories = expenses.groupBy { it.category }
+                .map { (category, expenses) ->
+                    val amount = expenses.sumOf { it.amount }
+                    val percentage = totalAmount.divide(amount, 4, RoundingMode.HALF_UP)
+                    ExpenseCategoryResponse.of(
+                        name = category,
+                        amount = amount,
+                        percentage = percentage.multiply(BigDecimal(100))
+                    )
+                }
+        )
     }
 
     private suspend fun generateSlug(): String {
