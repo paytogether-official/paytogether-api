@@ -141,7 +141,7 @@ class JourneyService(
             expenseCategories = expenses.groupBy { it.category }
                 .map { (category, expenses) ->
                     val amount = expenses.sumOf { it.amount }
-                    val percentage = totalAmount.divide(amount, 4, RoundingMode.HALF_UP)
+                    val percentage = amount.divide(totalAmount, 4, RoundingMode.HALF_UP)
                     ExpenseCategoryResponse.of(
                         name = category,
                         amount = amount,
