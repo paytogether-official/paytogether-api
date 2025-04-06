@@ -148,6 +148,7 @@ class JourneyService(
                         percentage = percentage.multiply(BigDecimal(100))
                     )
                 }
+                .sortedByDescending { it.percentage }
         )
     }
 
