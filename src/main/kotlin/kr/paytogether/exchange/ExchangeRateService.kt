@@ -45,6 +45,7 @@ class ExchangeRateService(
                     rate = it.rate
                 )
             }
+            .filterNot { it.baseCurrency == "KRW" }
             .let { exchangeRateRepository.saveAll(it).collect() }
     }
 }
