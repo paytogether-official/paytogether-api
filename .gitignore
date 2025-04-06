@@ -43,4 +43,4 @@ out/
 .env
 
 ### Database ###
-db/
+db/mysql/
