@@ -20,7 +20,7 @@ Then, fill in the `.env` file with the required values.
 - `DATABASE_PASSWORD`: The password to connect to your database.
 
 **Financial Data API Configuration**
-- `TWELVE_DATA_API_KEY`: The API key for Twelve Data.
+- `TWELVE_DATA_API_KEY`: The API key for [Twelve Data](https://twelvedata.com).
 
 ### Docker
 To run the application using Docker, you can use the following command:
