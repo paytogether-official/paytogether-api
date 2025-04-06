@@ -28,6 +28,7 @@ class JourneyController(
     ) = journeyService.getJourneys(journeyIds)
 
     @PostMapping("/journeys/{journeyId:[a-z0-9]+}/close")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     suspend fun closeJourney(
         @PathVariable journeyId: String
     ) = journeyService.closeJourney(journeyId)
