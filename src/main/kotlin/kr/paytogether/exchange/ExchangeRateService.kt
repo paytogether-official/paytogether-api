@@ -24,11 +24,7 @@ class ExchangeRateService(
 
     suspend fun getExchangeRate(currency: String): ExchangeResponse {
         val exchange = exchangeRateRepository.findTopByBaseCurrencyOrderByDateDesc(currency)
-        return ExchangeResponse(
-            date = exchange?.date,
-            currency = currency,
-            exchangeRate = exchange?.rate?.stripTrailingZeros()
-        )
+        return if (exchange == null) ExchangeResponse.empty(currency) else ExchangeResponse.from(exchange)
     }
 
     @Transactional

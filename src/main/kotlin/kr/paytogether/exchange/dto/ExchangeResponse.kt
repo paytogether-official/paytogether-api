@@ -19,5 +19,11 @@ data class ExchangeResponse(
             currency = exchangeRate.baseCurrency,
             exchangeRate = exchangeRate.rate.setScale(2, HALF_UP),
         )
+
+        fun empty(currency: String) = ExchangeResponse(
+            date = null,
+            currency = currency,
+            exchangeRate = null,
+        )
     }
 }
