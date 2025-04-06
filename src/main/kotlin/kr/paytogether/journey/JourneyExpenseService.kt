@@ -21,8 +21,9 @@ class JourneyExpenseService(
 
     @Transactional
     suspend fun createExpense(journeyId: String, create: JourneyExpenseCreate): JourneyExpenseResponse {
-        if (journeyRepository.existsByJourneyId(journeyId).not()) {
-            throw NotFoundException("Journey not found by id: $journeyId")
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
+        if (journey.closedAt != null) {
+            throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Journey is already closed: $journeyId")
         }
 
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.name }
@@ -72,8 +73,9 @@ class JourneyExpenseService(
 
     @Transactional(readOnly = true)
     suspend fun getExpenses(journeyId: String): List<JourneyExpenseResponse> {
-        if (journeyRepository.existsByJourneyId(journeyId).not()) {
-            throw NotFoundException("Journey not found by id: $journeyId")
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
+        if (journey.closedAt != null) {
+            throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Journey is already closed: $journeyId")
         }
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
 
