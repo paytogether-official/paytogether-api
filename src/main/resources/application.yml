@@ -3,7 +3,7 @@ spring:
     name: paytogether
 
   r2dbc:
-    url: r2dbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?serverTimezone=Asia/Seoul&cacheDefaultTimezone=false
+    url: r2dbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 

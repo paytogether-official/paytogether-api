@@ -3,21 +3,20 @@ package kr.paytogether.journey
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import kr.paytogether.journey.dto.*
 import kr.paytogether.journey.entity.JourneySettlement
 import kr.paytogether.journey.projection.JourneyLedgerSumProjection
 import kr.paytogether.journey.repository.*
 import kr.paytogether.shared.exception.BadRequestException
-import kr.paytogether.shared.exception.ErrorCode.*
+import kr.paytogether.shared.exception.ErrorCode.DUPLICATE
 import kr.paytogether.shared.exception.NotFoundException
 import kr.paytogether.shared.utils.isZero
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.security.MessageDigest
 import java.time.Instant
-import java.time.LocalDateTime
 
 @Service
 class JourneyService(
@@ -116,7 +115,7 @@ class JourneyService(
         journeySettlementRepository.saveAll(settlements).collect()
 
         // 여정 종료
-        journeyRepository.save(journey.copy(closedAt = LocalDateTime.now()))
+        journeyRepository.save(journey.copy(closedAt = Instant.now()))
     }
 
     suspend fun getSettlement(journeyId: String): JourneySettlementResultResponse {

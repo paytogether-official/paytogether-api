@@ -3,7 +3,7 @@ package kr.paytogether.journey.entity
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Table("journey_settlement")
 data class JourneySettlement(
@@ -18,5 +18,5 @@ data class JourneySettlement(
     val amount: BigDecimal,
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null
+    val createdAt: Instant? = null
 )

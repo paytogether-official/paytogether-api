@@ -5,8 +5,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Table(name = "journey_expense")
 data class JourneyExpense(
@@ -26,12 +26,12 @@ data class JourneyExpense(
 
     val memo: String,
 
-    val deletedAt: LocalDateTime? = null,
+    val deletedAt: Instant? = null,
 
     @CreatedDate
     @LastModifiedDate
-    val updatedAt: LocalDateTime? = null,
+    val updatedAt: Instant? = null,
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null,
+    val createdAt: Instant? = null,
 )

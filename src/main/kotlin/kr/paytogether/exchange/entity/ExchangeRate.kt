@@ -5,8 +5,8 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Table("exchange_rate")
 data class ExchangeRate(
@@ -24,5 +24,5 @@ data class ExchangeRate(
     val rate: BigDecimal,
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null,
+    val createdAt: Instant? = null,
 )

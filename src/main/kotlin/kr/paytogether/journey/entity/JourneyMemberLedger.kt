@@ -4,7 +4,7 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Table(name = "journey_member_ledger")
 data class JourneyMemberLedger(
@@ -22,7 +22,7 @@ data class JourneyMemberLedger(
     val note: String,
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null,
+    val createdAt: Instant? = null,
 
-    val deletedAt: LocalDateTime? = null,
+    val deletedAt: Instant? = null,
 )

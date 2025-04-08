@@ -3,8 +3,7 @@ package kr.paytogether.journey.entity
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
-
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Table("journey_member")
 data class JourneyMember(
@@ -15,5 +14,5 @@ data class JourneyMember(
     val name: String,
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null,
+    val createdAt: Instant? = null,
 )

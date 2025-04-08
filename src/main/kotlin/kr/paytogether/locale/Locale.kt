@@ -2,7 +2,7 @@ package kr.paytogether.locale
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Table("locale")
 data class Locale(
@@ -14,5 +14,5 @@ data class Locale(
     val countryEnglishName: String,
     val localeCode: String,
     val sort: Int,
-    val createdAt: LocalDateTime,
+    val createdAt: Instant,
 )

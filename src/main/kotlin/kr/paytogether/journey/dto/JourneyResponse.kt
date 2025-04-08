@@ -1,6 +1,8 @@
 package kr.paytogether.journey.dto
 
 import kr.paytogether.journey.entity.Journey
+import kr.paytogether.shared.utils.toLocalDateTime
+import kr.paytogether.shared.utils.toLocalDateTimeOrNull
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,8 +42,8 @@ data class JourneyResponse(
                 startDate = journey.startDate,
                 endDate = journey.endDate,
                 localeCode = journey.localeCode,
-                closedAt = journey.closedAt,
-                createdAt = journey.createdAt,
+                closedAt = journey.closedAt.toLocalDateTimeOrNull(),
+                createdAt = journey.createdAt.toLocalDateTime(),
                 members = members
             )
         }
