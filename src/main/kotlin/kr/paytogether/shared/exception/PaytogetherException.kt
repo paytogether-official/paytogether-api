@@ -9,6 +9,8 @@ open class PaytogetherException(
     open val details: String? = null,
     open val data: Any? = null,
 ): RuntimeException(message) {
+    constructor(errorCode: ErrorCode, message: String): this(errorCode, message, errorCode.code)
+
     override fun toString(): String {
         return "PaytogetherException(message='$message', errorCode='$errorCode', status=$status, details=$details, data=$data)"
     }

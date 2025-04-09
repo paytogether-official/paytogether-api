@@ -19,6 +19,10 @@ paytogether:
     twelvedata:
       url: https://api.twelvedata.com
       api-key: ${TWELVE_DATA_API_KEY}
+  slack:
+    webhook:
+      error:
+        url: ${SLACK_WEBHOOK_ERROR_URL}
 
 logging:
   level:

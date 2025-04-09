@@ -19,6 +19,7 @@ repositories {
 }
 
 val resilience4jVersion by extra { "1.7.0" }
+val slackVersion by extra { "1.45.2" }
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
@@ -48,6 +49,11 @@ dependencies {
 //    runtimeOnly("org.postgresql:postgresql")
 //    runtimeOnly("org.postgresql:r2dbc-postgresql")
     runtimeOnly("com.github.jasync-sql:jasync-r2dbc-mysql:2.2.4")
+
+    // slack
+    implementation("com.slack.api:slack-api-client:$slackVersion")
+    implementation("com.slack.api:slack-api-model-kotlin-extension:$slackVersion")
+    implementation("com.slack.api:slack-api-client-kotlin-extension:$slackVersion")
 
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
