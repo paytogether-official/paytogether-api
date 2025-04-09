@@ -8,17 +8,20 @@ data class JourneySettlementResultResponse(
     val journeyId: String,
     val settlements: List<JourneySettlementResponse>,
     val expenseCategories: List<ExpenseCategoryResponse>,
+    val memberExpenses: List<MemberExpenseResponse>,
 ) {
     companion object {
         fun of(
             journeyId: String,
             settlements: List<JourneySettlementResponse>,
             expenseCategories: List<ExpenseCategoryResponse>,
+            memberExpenses: List<MemberExpenseResponse>,
         ): JourneySettlementResultResponse =
             JourneySettlementResultResponse(
                 journeyId = journeyId,
                 settlements = settlements,
-                expenseCategories = expenseCategories
+                expenseCategories = expenseCategories,
+                memberExpenses = memberExpenses,
             )
     }
 }
@@ -63,5 +66,20 @@ data class ExpenseCategoryResponse(
                 amount = amount,
                 percentage = percentage.setScale(2, RoundingMode.HALF_UP),
             )
+    }
+}
+
+data class MemberExpenseResponse(
+    val name: String,
+    val amount: BigDecimal,
+) {
+    companion object {
+        fun of(
+            name: String,
+            amount: BigDecimal,
+        ) = MemberExpenseResponse(
+            name = name,
+            amount = amount.setScale(2, RoundingMode.HALF_UP),
+        )
     }
 }

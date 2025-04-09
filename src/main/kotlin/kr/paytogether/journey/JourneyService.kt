@@ -126,6 +126,7 @@ class JourneyService(
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
         val totalAmount = expenses.sumOf { it.amount }
+        val memberExpenseMap = expenses.associateBy { it.expensePayerId }
         return JourneySettlementResultResponse.of(
             journeyId = journeyId,
             settlements = settlement.map {
@@ -147,7 +148,14 @@ class JourneyService(
                         percentage = percentage.multiply(BigDecimal(100))
                     )
                 }
-                .sortedByDescending { it.percentage }
+                .sortedByDescending { it.percentage },
+            memberExpenses = memberMap.values.map {
+                val expense = memberExpenseMap[it.journeyMemberId]
+                MemberExpenseResponse.of(
+                    name = it.name,
+                    amount = expense?.amount ?: BigDecimal.ZERO
+                )
+            }.sortedByDescending { it.amount }
         )
     }
 
