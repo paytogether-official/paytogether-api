@@ -22,6 +22,9 @@ Then, fill in the `.env` file with the required values.
 **Financial Data API Configuration**
 - `TWELVE_DATA_API_KEY`: The API key for [Twelve Data](https://twelvedata.com).
 
+**Monitoring Configuration**
+- `SLACK_WEBHOOK_ERROR_URL`: The webhook URL for sending error notifications to Slack.
+
 ### Docker
 To run the application using Docker, you can use the following command:
 
