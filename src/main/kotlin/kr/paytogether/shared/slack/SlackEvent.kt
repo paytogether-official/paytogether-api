@@ -6,6 +6,7 @@ data class SlackEvent (
     val topic: Topic,
     val title: String,
     val message: String? = null,
+    val details: String? = null,
     val color: Color = Color.GOOD,
     val fields: List<Field> = emptyList(),
 ) : ApplicationEvent(title)
