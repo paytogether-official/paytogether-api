@@ -2,7 +2,6 @@ package kr.paytogether.exchange.feign.twelvedata
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.kotlin.ratelimiter.executeSuspendFunction
-import io.github.resilience4j.kotlin.ratelimiter.rateLimiter
 import io.github.resilience4j.ratelimiter.RateLimiter
 import io.github.resilience4j.ratelimiter.RateLimiterConfig
 import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateQuery
@@ -10,8 +9,6 @@ import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateSuccess
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
-import kotlinx.coroutines.flow.*
-import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateResponse
 
 @Service
 class TwelvedataService(
@@ -39,6 +36,7 @@ class TwelvedataService(
                     date = date,
                 )
                 rateLimiter.executeSuspendFunction {
+                    logger.info { "Requesting exchange rates for ${query.symbol} on ${query.date}" }
                     val res = twelvedataRest.getExchangeRate(query)
                     return@executeSuspendFunction res
                 }.values
