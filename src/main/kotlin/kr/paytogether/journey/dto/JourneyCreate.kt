@@ -1,18 +1,21 @@
 package kr.paytogether.journey.dto
 
-import jakarta.validation.constraints.*
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 import kr.paytogether.journey.entity.Journey
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.format.annotation.DateTimeFormat.*
 import java.math.BigDecimal
-import java.security.MessageDigest
-import java.time.Instant
 import java.time.LocalDate
 
 data class JourneyCreate(
     @field:NotBlank(message = "baseCurrency must not be blank")
+    @field:Pattern(regexp = "^[A-Z]{3}$", message = "baseCurrency must be a 3-letter currency code")
     val baseCurrency: String,
 
+    @field:NotBlank(message = "quoteCurrency must not be blank")
+    @field:Pattern(regexp = "^[A-Z]{3}$", message = "quoteCurrency must be a 3-letter currency code")
     val quoteCurrency: String = "KRW",
 
     @field:DecimalMin(value = "0.0", message = "exchangeRate must be greater than or equal to 0")
