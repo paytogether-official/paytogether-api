@@ -11,5 +11,7 @@ enum class ErrorCode(val code: HttpStatus) {
 
     DUPLICATE(HttpStatus.CONFLICT),
 
+    FEIGN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
+
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
 }

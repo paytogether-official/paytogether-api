@@ -52,3 +52,15 @@ data class ConflictException(
     details = details,
     data = data
 )
+
+data class FeignException(
+    override val message: String,
+    override val details: String? = null,
+    override val data: Any? = null,
+): PaytogetherException(
+    errorCode = ErrorCode.FEIGN_ERROR,
+    message = message,
+    status = HttpStatus.INTERNAL_SERVER_ERROR,
+    details = details,
+    data = data
+)
