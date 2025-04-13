@@ -1,12 +1,19 @@
 package kr.paytogether.journey
 
 import kotlinx.coroutines.flow.collect
-import kr.paytogether.journey.dto.*
+import kr.paytogether.journey.dto.JourneyExpenseCreate
+import kr.paytogether.journey.dto.JourneyExpenseResponse
+import kr.paytogether.journey.dto.JourneyExpenseUpdate
+import kr.paytogether.journey.dto.JourneyExpenseWithMembersResponse
 import kr.paytogether.journey.entity.JourneyMemberLedger
-import kr.paytogether.journey.repository.*
+import kr.paytogether.journey.repository.JourneyExpenseRepository
+import kr.paytogether.journey.repository.JourneyMemberLedgerRepository
+import kr.paytogether.journey.repository.JourneyMemberRepository
+import kr.paytogether.journey.repository.JourneyRepository
 import kr.paytogether.shared.exception.BadRequestException
 import kr.paytogether.shared.exception.ErrorCode
 import kr.paytogether.shared.exception.NotFoundException
+import kr.paytogether.shared.utils.notEqIgnoreScale
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -38,7 +45,7 @@ class JourneyExpenseService(
             )
 
         // 요청 받은 금액과 멤버 금액 합계가 다름
-        if (create.amount != create.members.sumOf { it.amount })
+        if (create.amount notEqIgnoreScale create.members.sumOf { it.amount })
             throw BadRequestException(
                 ErrorCode.VALIDATION_ERROR,
                 "Amount is not matched, expected: ${create.amount}, actual: ${create.members.sumOf { it.amount }}"
@@ -132,7 +139,7 @@ class JourneyExpenseService(
             )
 
         // 요청 받은 금액과 멤버 금액 합계가 다름
-        if (update.amount != null && update.amount != update.members.sumOf { it.amount })
+        if (update.amount != null && update.amount notEqIgnoreScale update.members.sumOf { it.amount })
             throw BadRequestException(
                 ErrorCode.VALIDATION_ERROR,
                 "Amount is not matched, expected: ${update.amount}, actual: ${update.members.sumOf { it.amount }}"
