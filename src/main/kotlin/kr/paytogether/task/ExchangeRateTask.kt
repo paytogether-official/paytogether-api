@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.toSet
 import kr.paytogether.exchange.ExchangeRateService
+import kr.paytogether.exchange.enums.ExchangeRateProvider
 import kr.paytogether.exchange.feign.twelvedata.TwelvedataService
 import kr.paytogether.exchange.repository.ExchangeRateRepository
 import kr.paytogether.locale.LocaleRepository
@@ -36,7 +37,7 @@ class ExchangeRateTask(
             .map { it.baseCurrency }
             .toSet()
 
-        localeRepository.findAll()
+        localeRepository.findAllByExchangeRateProvider(ExchangeRateProvider.TWELVEDATA)
             .filterNot { todayExistsCurrencySet.contains(it.currency) }
             .toList()
             .distinctBy { it.currency }
