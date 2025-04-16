@@ -1,9 +1,11 @@
 package kr.paytogether.exchange.feign.twelvedata
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import feign.Logger
 import feign.RequestInterceptor
 import feign.Response
+import feign.ResponseInterceptor
 import feign.codec.ErrorDecoder
 import feign.gson.GsonDecoder
 import feign.gson.GsonEncoder
@@ -31,6 +33,9 @@ class TwelvedataFeignConfig(
         .requestInterceptors(listOf(
             requestInterceptor(),
         ))
+        .responseInterceptors(listOf(
+            responseInterceptor(),
+        ))
         .logger(Slf4jLogger())
         .errorDecoder(errorDecoder())
         .logLevel(Logger.Level.FULL)
@@ -40,6 +45,23 @@ class TwelvedataFeignConfig(
         template.header("Content-Type", "application/json")
         template.header("Accept", "application/json")
         template.header("Authorization", "apikey ${properties.apiKey}")
+    }
+
+    private fun responseInterceptor(): ResponseInterceptor = ResponseInterceptor { context, _ ->
+        val response = context.response().body().asReader(StandardCharsets.UTF_8).use {  it.readText() }
+
+        gson.fromJson(response, JsonElement::class.java)
+            .takeIf { it.isJsonObject }
+            ?.let { jsonElement ->
+                if (jsonElement.asJsonObject.has("message")) {
+                    throw FeignException(
+                        message = jsonElement.asJsonObject.get("message").asString,
+                        details = response,
+                    )
+                }
+            }
+
+        context.proceed()
     }
 
     fun errorDecoder(): ErrorDecoder = ErrorDecoder { _: String, r: Response ->
