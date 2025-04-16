@@ -1,8 +1,6 @@
 package kr.paytogether.exchange
 
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toSet
+import kotlinx.coroutines.flow.*
 import kr.paytogether.exchange.dto.ExchangeResponse
 import kr.paytogether.exchange.entity.ExchangeRate
 import kr.paytogether.exchange.enums.ExchangeRateProvider
@@ -28,10 +26,11 @@ class ExchangeRateService(
     }
 
     @Transactional
-    suspend fun createExchangeRates(exchangeRates: List<ExchangeRateSuccess>, date: LocalDate = LocalDate.now()) {
+    suspend fun createExchangeRates(exchangeRates: Flow<ExchangeRateSuccess>, date: LocalDate = LocalDate.now()) {
         val exchangeKeySet = exchangeRateRepository.findByDate(date)
             .map { "${it.baseCurrency}/${it.quoteCurrency}" }.toSet()
-        exchangeRates.filterNot { exchangeKeySet.contains(it.symbol) }
+        exchangeRates
+            .filterNot { exchangeKeySet.contains(it.symbol) }
             .map {
                 ExchangeRate(
                     date = date,
@@ -41,7 +40,6 @@ class ExchangeRateService(
                     rate = it.rate
                 )
             }
-            .filterNot { it.baseCurrency == "KRW" }
             .let { exchangeRateRepository.saveAll(it).collect() }
     }
 }
