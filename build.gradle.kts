@@ -56,6 +56,10 @@ dependencies {
     implementation("com.slack.api:slack-api-model-kotlin-extension:$slackVersion")
     implementation("com.slack.api:slack-api-client-kotlin-extension:$slackVersion")
 
+    // metric
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
