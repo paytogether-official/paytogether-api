@@ -120,9 +120,6 @@ class JourneyService(
 
     suspend fun getSettlement(journeyId: String): JourneySettlementResultResponse {
         val settlement = journeySettlementRepository.findByJourneyId(journeyId)
-        if (settlement.isEmpty()) {
-            throw NotFoundException("Settlement not found by journeyId: $journeyId")
-        }
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
         val totalAmount = expenses.sumOf { it.amount }
