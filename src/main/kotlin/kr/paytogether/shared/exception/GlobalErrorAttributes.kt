@@ -8,10 +8,10 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.server.ServerWebInputException
 
 @Component
-class GlobalErrorAttributes: DefaultErrorAttributes() {
+class GlobalErrorAttributes : DefaultErrorAttributes() {
     override fun getErrorAttributes(request: ServerRequest, options: ErrorAttributeOptions): MutableMap<String, out Any?> {
         val errorAttributes = super.getErrorAttributes(request, options)
-        val error: Throwable = super.getError(request)
+        val error: Throwable = getError(request)
 
         return when (error) {
             is PaytogetherException -> mutableMapOf(
@@ -44,4 +44,8 @@ class GlobalErrorAttributes: DefaultErrorAttributes() {
             )
         }
     }
+
+    override fun getError(request: ServerRequest): Throwable =
+        generateSequence(super.getError(request)) { it.cause?.takeIf { cause -> cause !== it } }
+            .last()
 }
