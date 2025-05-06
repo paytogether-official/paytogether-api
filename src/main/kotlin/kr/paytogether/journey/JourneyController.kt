@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import kr.paytogether.journey.dto.JourneyCreate
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
+import kr.paytogether.journey.dto.JourneyUpdate
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -26,6 +27,12 @@ class JourneyController(
     suspend fun getJourneys(
         @RequestParam journeyIds: List<String>,
     ) = journeyService.getJourneys(journeyIds)
+
+    @PatchMapping("/journeys/{journeyId:[a-z0-9]+}")
+    suspend fun updateJourney(
+        @PathVariable journeyId: String,
+        @Valid @RequestBody update: JourneyUpdate,
+    ) = journeyService.updateJourney(journeyId, update)
 
     @PostMapping("/journeys/{journeyId:[a-z0-9]+}/close")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -59,6 +59,29 @@ class JourneyService(
     }
 
     @Transactional
+    suspend fun updateJourney(journeyId: String, update: JourneyUpdate): JourneyResponse {
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
+        if (journey.closedAt != null) {
+            throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Journey already closed for journeyId: $journeyId")
+        }
+        val memberNameSet = journeyMemberRepository.findByJourneyId(journey.journeyId)
+            .map { it.name }
+            .toSet()
+
+        // 이름 중복 확인
+        if (update.members.any { memberNameSet.contains(it.name) }) {
+            throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Duplicate member name found")
+        }
+        return JourneyResponse.of(
+            journey,
+            update.members.map { it.toEntity(journeyId) }
+                .let { journeyMemberRepository.saveAll(it) }
+                .map { member -> JourneyMemberResponse.from(member) }
+                .toList()
+        )
+    }
+
+    @Transactional
     suspend fun closeJourney(journeyId: String) {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
         if (journeySettlementRepository.existsByJourneyId(journeyId)) {

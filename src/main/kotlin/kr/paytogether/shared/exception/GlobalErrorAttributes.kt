@@ -21,6 +21,13 @@ class GlobalErrorAttributes : DefaultErrorAttributes() {
                 "details" to error.details,
                 "data" to error.data,
             )
+            is IllegalArgumentException -> mutableMapOf(
+                "message" to error.message,
+                "errorCode" to ErrorCode.VALIDATION_ERROR,
+                "status" to 400,
+                "details" to null,
+                "data" to null,
+            )
             is WebExchangeBindException -> mutableMapOf(
                 "message" to error.bindingResult.fieldErrors.joinToString { it.defaultMessage.orEmpty() },
                 "errorCode" to ErrorCode.VALIDATION_ERROR,
