@@ -19,6 +19,8 @@ data class JourneyExpenseResponse(
 
     val amount: BigDecimal,
 
+    val remainingAmount: BigDecimal,
+
     val memo: String,
 ) {
     companion object {
@@ -29,7 +31,8 @@ data class JourneyExpenseResponse(
             expenseDate = expense.expenseDate,
             category = expense.category,
             currency = expense.currency,
-            amount = expense.amount.stripTrailingZeros(),
+            amount = expense.amount.setScale(2),
+            remainingAmount = expense.remainingAmount.setScale(2),
             memo = expense.memo,
         )
     }

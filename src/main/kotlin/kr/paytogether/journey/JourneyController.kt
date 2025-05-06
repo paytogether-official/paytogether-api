@@ -14,24 +14,30 @@ class JourneyController(
 ) {
     @PostMapping("/journeys")
     suspend fun createJourney(
-        @RequestBody @Valid create: JourneyCreate
+        @RequestBody @Valid create: JourneyCreate,
     ) = journeyService.createJourney(create)
 
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}")
     suspend fun getJourney(
-        @PathVariable journeyId: String
+        @PathVariable journeyId: String,
     ) = journeyService.getJourney(journeyId)
 
     @GetMapping("/journeys")
     suspend fun getJourneys(
-        @RequestParam journeyIds: List<String>
+        @RequestParam journeyIds: List<String>,
     ) = journeyService.getJourneys(journeyIds)
 
     @PostMapping("/journeys/{journeyId:[a-z0-9]+}/close")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     suspend fun closeJourney(
-        @PathVariable journeyId: String
+        @PathVariable journeyId: String,
     ) = journeyService.closeJourney(journeyId)
+
+    @PostMapping("/journeys/{journeyId:[a-z0-9]+}/reopen")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun reopenJourney(
+        @PathVariable journeyId: String,
+    ) = journeyService.reopen(journeyId)
 
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/settlement")
     suspend fun getJourneySettlement(

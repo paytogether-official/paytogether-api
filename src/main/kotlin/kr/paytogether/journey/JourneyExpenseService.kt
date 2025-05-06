@@ -44,13 +44,6 @@ class JourneyExpenseService(
                 "Members count is not matched, expected: ${memberMap.size}, actual: ${create.members.size}"
             )
 
-        // 요청 받은 금액과 멤버 금액 합계가 다름
-        if (create.amount notEqIgnoreScale create.members.sumOf { it.amount })
-            throw BadRequestException(
-                ErrorCode.VALIDATION_ERROR,
-                "Amount is not matched, expected: ${create.amount}, actual: ${create.members.sumOf { it.amount }}"
-            )
-
         val expense = journeyExpenseRepository.save(create.toEntity(journeyId, payer.journeyMemberId))
         require(expense.journeyExpenseId != null) { "Expense id is null" }
 
@@ -80,10 +73,6 @@ class JourneyExpenseService(
 
     @Transactional(readOnly = true)
     suspend fun getExpenses(journeyId: String): List<JourneyExpenseResponse> {
-        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
-        if (journey.closedAt != null) {
-            throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Journey is already closed: $journeyId")
-        }
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
 
         return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).map {
@@ -110,11 +99,11 @@ class JourneyExpenseService(
             members = ledgers
                 .filter { it.amount < BigDecimal.ZERO }
                 .map {
-                JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
-                    ledger = it,
-                    name = memberMap[it.journeyMemberId]?.name ?: throw NotFoundException("Member not found by id: ${it.journeyMemberId}"),
-                )
-            }
+                    JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
+                        ledger = it,
+                        name = memberMap[it.journeyMemberId]?.name ?: throw NotFoundException("Member not found by id: ${it.journeyMemberId}"),
+                    )
+                }
         )
     }
 

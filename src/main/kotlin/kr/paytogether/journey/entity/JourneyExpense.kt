@@ -24,6 +24,8 @@ data class JourneyExpense(
 
     val amount: BigDecimal,
 
+    val remainingAmount: BigDecimal,
+
     val memo: String,
 
     val deletedAt: Instant? = null,

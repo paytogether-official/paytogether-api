@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS journey_expense
     expense_date       DATE           NOT NULL,
     currency           VARCHAR(10)    NOT NULL,
     amount             DECIMAL(32, 8) NOT NULL,
+    remaining_amount   DECIMAL(32, 8) NOT NULL,
     memo               VARCHAR(255),
     deleted_at         TIMESTAMP      NULL,
     updated_at         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -7,4 +7,6 @@ interface JourneySettlementRepository: CoroutineCrudRepository<JourneySettlement
     suspend fun findByJourneyId(journeyId: String): List<JourneySettlement>
 
     suspend fun existsByJourneyId(journeyId: String): Boolean
+
+    suspend fun deleteByJourneyId(journeyId: String): Int
 }

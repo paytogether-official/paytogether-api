@@ -8,6 +8,7 @@ import kr.paytogether.journey.entity.JourneySettlement
 import kr.paytogether.journey.projection.JourneyLedgerSumProjection
 import kr.paytogether.journey.repository.*
 import kr.paytogether.shared.exception.BadRequestException
+import kr.paytogether.shared.exception.ErrorCode
 import kr.paytogether.shared.exception.ErrorCode.DUPLICATE
 import kr.paytogether.shared.exception.NotFoundException
 import kr.paytogether.shared.utils.isZero
@@ -60,11 +61,35 @@ class JourneyService(
     @Transactional
     suspend fun closeJourney(journeyId: String) {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
-        val ledgers = journeyMemberLedgerRepository.findJourneyLedgerSum(journey.journeyId).map { JourneyLedgerSum.from(it) }
-
         if (journeySettlementRepository.existsByJourneyId(journeyId)) {
             throw BadRequestException(DUPLICATE, "Journey already settled for journeyId: $journeyId")
         }
+        val totalRemainingAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).sumOf { it.remainingAmount }
+        val members = journeyMemberRepository.findByJourneyId(journey.journeyId)
+        val ledgers = journeyMemberLedgerRepository.findJourneyLedgerSum(journey.journeyId)
+            .map { JourneyLedgerSum.from(it) }
+            .toMutableList()
+            .apply {
+                addAll(members.map {
+                    JourneyLedgerSum(
+                        it.journeyMemberId!!,
+                        totalRemainingAmount.divide(members.size.toBigDecimal(), 2, RoundingMode.FLOOR).negate(),
+                    )
+                })
+                add(
+                    JourneyLedgerSum(
+                        members.first().journeyMemberId!!,
+                        totalRemainingAmount - totalRemainingAmount.divide(members.size.toBigDecimal(), 2, RoundingMode.FLOOR).negate()
+                    )
+                )
+            }
+            .groupBy { it.journeyMemberId }
+            .map { (journeyMemberId, ledgers) ->
+                JourneyLedgerSum(
+                    journeyMemberId = journeyMemberId,
+                    amount = ledgers.sumOf { it.amount }
+                )
+            }
 
         // 양수면 받게될 금액(채권), 음수면 지불해야할 금액(채무)
         val creditors = ledgers.filter { it.amount > BigDecimal.ZERO }.sortedByDescending { it.amount }.toMutableList()
@@ -118,12 +143,30 @@ class JourneyService(
         journeyRepository.save(journey.copy(closedAt = Instant.now()))
     }
 
+    @Transactional
+    suspend fun reopen(journeyId: String) {
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
+        if (journey.closedAt == null) {
+            throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Journey already opened for journeyId: $journeyId")
+        }
+        journeySettlementRepository.deleteByJourneyId(journeyId)
+        journeyRepository.save(journey.copy(closedAt = null))
+    }
+
     suspend fun getSettlement(journeyId: String): JourneySettlementResultResponse {
         val settlement = journeySettlementRepository.findByJourneyId(journeyId)
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
         val totalAmount = expenses.sumOf { it.amount }
-        val memberExpenseMap = expenses.associateBy { it.expensePayerId }
+        val memberExpenseMap = expenses
+            .groupBy { it.expensePayerId }
+            .map { (expensePayerId, expenses) ->
+                JourneyLedgerSum(
+                    journeyMemberId = expensePayerId,
+                    amount = expenses.sumOf { it.amount }
+                )
+            }
+            .associateBy { it.journeyMemberId }
         return JourneySettlementResultResponse.of(
             journeyId = journeyId,
             settlements = settlement.map {
