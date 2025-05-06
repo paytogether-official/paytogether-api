@@ -44,17 +44,23 @@ class JourneyService(
     suspend fun getJourney(journeyId: String): JourneyResponse {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
         val members = journeyMemberRepository.findByJourneyId(journey.journeyId).map { JourneyMemberResponse.from(it) }.toList()
-        return JourneyResponse.of(journey, members)
+        val totalExpenseAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).sumOf { it.amount }
+        return JourneyResponse.of(journey, members, totalExpenseAmount)
     }
 
     @Transactional(readOnly = true)
     suspend fun getJourneys(journeyIds: List<String>): List<JourneyResponse> {
         val journeys = journeyRepository.findByJourneyIdIn(journeyIds)
         val memberMap = journeyMemberRepository.findByJourneyIdIn(journeyIds).groupBy { it.journeyId }
+            .mapValues { (_, members) -> members.map { JourneyMemberResponse.from(it) } }
+        val journeyExpenseMap = journeyExpenseRepository.findByJourneyIdInAndDeletedAtIsNull(journeyIds)
+            .groupBy { it.journeyId }
+            .mapValues { (_, expenses) -> expenses.sumOf { it.amount } }
 
         return journeys.map { journey ->
-            val members = memberMap[journey.journeyId]?.map { JourneyMemberResponse.from(it) } ?: emptyList()
-            JourneyResponse.of(journey, members)
+            val members = memberMap[journey.journeyId] ?: emptyList()
+            val totalExpenseAmount = journeyExpenseMap[journey.journeyId] ?: BigDecimal.ZERO
+            JourneyResponse.of(journey, members, totalExpenseAmount)
         }
     }
 

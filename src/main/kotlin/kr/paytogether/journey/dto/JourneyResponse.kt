@@ -4,6 +4,7 @@ import kr.paytogether.journey.entity.Journey
 import kr.paytogether.shared.utils.toLocalDateTime
 import kr.paytogether.shared.utils.toLocalDateTimeOrNull
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -24,6 +25,8 @@ data class JourneyResponse(
 
     val localeCode: String,
 
+    val totalExpenseAmount: BigDecimal,
+
     val closedAt: LocalDateTime?,
 
     val createdAt: LocalDateTime,
@@ -31,20 +34,21 @@ data class JourneyResponse(
     val members: List<JourneyMemberResponse>,
 ) {
     companion object {
-        fun of(journey: Journey, members: List<JourneyMemberResponse>): JourneyResponse {
+        fun of(journey: Journey, members: List<JourneyMemberResponse>, totalExpenseAmount: BigDecimal = BigDecimal.ZERO): JourneyResponse {
             require(journey.createdAt != null) { "Journey createdAt cannot be null" }
             return JourneyResponse(
                 journeyId = journey.journeyId,
                 baseCurrency = journey.baseCurrency,
                 quoteCurrency = journey.quoteCurrency,
-                exchangeRate = journey.exchangeRate.stripTrailingZeros(),
+                exchangeRate = journey.exchangeRate.setScale(2, RoundingMode.FLOOR),
                 title = journey.title,
                 startDate = journey.startDate,
                 endDate = journey.endDate,
                 localeCode = journey.localeCode,
                 closedAt = journey.closedAt.toLocalDateTimeOrNull(),
                 createdAt = journey.createdAt.toLocalDateTime(),
-                members = members
+                members = members,
+                totalExpenseAmount = totalExpenseAmount.setScale(2, RoundingMode.FLOOR),
             )
         }
     }
