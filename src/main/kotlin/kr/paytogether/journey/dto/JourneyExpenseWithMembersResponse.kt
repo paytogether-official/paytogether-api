@@ -3,6 +3,7 @@ package kr.paytogether.journey.dto
 import kr.paytogether.journey.entity.JourneyExpense
 import kr.paytogether.journey.entity.JourneyMemberLedger
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 
 data class JourneyExpenseWithMembersResponse(
@@ -20,6 +21,8 @@ data class JourneyExpenseWithMembersResponse(
 
     val amount: BigDecimal,
 
+    val remainingAmount: BigDecimal,
+
     val memo: String,
 
     val members: List<JourneyExpenseMemberResponse>,
@@ -32,7 +35,8 @@ data class JourneyExpenseWithMembersResponse(
             expenseDate = expense.expenseDate,
             category = expense.category,
             currency = expense.currency,
-            amount = expense.amount.stripTrailingZeros(),
+            amount = expense.amount.setScale(2, RoundingMode.FLOOR),
+            remainingAmount = expense.remainingAmount.setScale(2, RoundingMode.FLOOR),
             memo = expense.memo,
             members = members,
         )
