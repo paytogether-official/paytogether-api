@@ -9,6 +9,8 @@ import java.time.LocalDate
 interface ExchangeRateRepository: CoroutineCrudRepository<ExchangeRate, Long> {
     suspend fun findTopByBaseCurrencyOrderByDateDesc(baseCurrency: String): ExchangeRate?
 
+    suspend fun findTopByBaseCurrencyAndQuoteCurrencyOrderByDateDesc(baseCurrency: String, quoteCurrency: String): ExchangeRate?
+
     suspend fun findByDate(date: LocalDate): Flow<ExchangeRate>
 
     @Query("""

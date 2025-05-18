@@ -10,7 +10,7 @@ data class ExchangeResponse(
 
     val currency: String,
 
-    val exchangeRate: BigDecimal?,
+    val exchangeRate: BigDecimal,
 ) {
 
     companion object {
@@ -18,12 +18,6 @@ data class ExchangeResponse(
             date = exchangeRate.date,
             currency = exchangeRate.baseCurrency,
             exchangeRate = exchangeRate.rate.setScale(2, HALF_UP),
-        )
-
-        fun empty(currency: String) = ExchangeResponse(
-            date = null,
-            currency = currency,
-            exchangeRate = null,
         )
     }
 }

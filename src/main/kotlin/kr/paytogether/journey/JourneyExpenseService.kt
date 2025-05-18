@@ -1,6 +1,7 @@
 package kr.paytogether.journey
 
 import kotlinx.coroutines.flow.collect
+import kr.paytogether.exchange.ExchangeRateService
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseResponse
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
@@ -24,6 +25,7 @@ class JourneyExpenseService(
     private val journeyMemberRepository: JourneyMemberRepository,
     private val journeyExpenseRepository: JourneyExpenseRepository,
     private val journeyMemberLedgerRepository: JourneyMemberLedgerRepository,
+    private val exchangeRateService: ExchangeRateService,
 ) {
 
     @Transactional
@@ -72,14 +74,19 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenses(journeyId: String): List<JourneyExpenseWithMembersResponse> {
+    suspend fun getExpenses(journeyId: String, quoteCurrency: String): List<JourneyExpenseWithMembersResponse> {
+
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val ledgerMap = journeyMemberLedgerRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
             .groupBy { it.journeyExpenseId }
 
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
+        val exchange = exchangeRateService.getExchangeRate(journey.baseCurrency, quoteCurrency)
+
         return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).map {
             JourneyExpenseWithMembersResponse.of(
                 expense = it,
+                exchange,
                 payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
                 members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
                     ?.map { ledger ->
@@ -94,7 +101,7 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpense(journeyId: String, journeyExpenseId: Long): JourneyExpenseWithMembersResponse {
+    suspend fun getExpense(journeyId: String, journeyExpenseId: Long, quoteCurrency: String): JourneyExpenseWithMembersResponse {
         val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, journeyExpenseId)
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
 
@@ -102,8 +109,12 @@ class JourneyExpenseService(
         val ledgers = journeyMemberLedgerRepository.findByJourneyExpenseIdAndDeletedAtIsNull(expense.journeyExpenseId)
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
 
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
+        val exchange = exchangeRateService.getExchangeRate(journey.baseCurrency, quoteCurrency)
+
         return JourneyExpenseWithMembersResponse.of(
             expense = expense,
+            exchange,
             payerName = journeyMemberRepository.findById(expense.expensePayerId)?.name
                 ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
             members = ledgers

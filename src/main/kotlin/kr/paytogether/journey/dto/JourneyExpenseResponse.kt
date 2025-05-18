@@ -15,7 +15,7 @@ data class JourneyExpenseResponse(
 
     val category: String,
 
-    val currency: String,
+    val baseCurrency: String,
 
     val amount: BigDecimal,
 
@@ -30,7 +30,7 @@ data class JourneyExpenseResponse(
             payerName = payerName,
             expenseDate = expense.expenseDate,
             category = expense.category,
-            currency = expense.currency,
+            baseCurrency = expense.currency,
             amount = expense.amount.setScale(2),
             remainingAmount = expense.remainingAmount.setScale(2),
             memo = expense.memo,

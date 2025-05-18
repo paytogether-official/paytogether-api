@@ -6,6 +6,7 @@ import kr.paytogether.exchange.entity.ExchangeRate
 import kr.paytogether.exchange.enums.ExchangeRateProvider
 import kr.paytogether.exchange.feign.twelvedata.dto.ExchangeRateSuccess
 import kr.paytogether.exchange.repository.ExchangeRateRepository
+import kr.paytogether.shared.exception.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -21,9 +22,15 @@ class ExchangeRateService(
         .map { ExchangeResponse.from(it) }
 
     suspend fun getExchangeRate(currency: String): ExchangeResponse {
-        val exchange = exchangeRateRepository.findTopByBaseCurrencyOrderByDateDesc(currency)
-        return if (exchange == null) ExchangeResponse.empty(currency) else ExchangeResponse.from(exchange)
+        val exchange =
+            exchangeRateRepository.findTopByBaseCurrencyOrderByDateDesc(currency) ?: throw NotFoundException("Currency $currency not found")
+        return ExchangeResponse.from(exchange)
     }
+
+    suspend fun getExchangeRate(baseCurrency: String, quoteCurrency: String): ExchangeRate =
+        exchangeRateRepository.findTopByBaseCurrencyAndQuoteCurrencyOrderByDateDesc(baseCurrency, quoteCurrency)
+            ?: throw NotFoundException("Exchange rate for $baseCurrency/$quoteCurrency not found")
+
 
     @Transactional
     suspend fun createExchangeRates(exchangeRates: Flow<ExchangeRateSuccess>, date: LocalDate = LocalDate.now()) {

@@ -14,6 +14,12 @@ CREATE TABLE IF NOT EXISTS exchange_rate
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
+# 2025-01-01 환율 데이터 추가
+INSERT INTO exchange_rate
+(date, base_currency, quote_currency, rate, provider)
+SELECT DISTINCT '2025-01-01', base_currency, base_currency, 1, 'ADMIN'
+FROM exchange_rate
+;
 
 CREATE TABLE IF NOT EXISTS locale
 (

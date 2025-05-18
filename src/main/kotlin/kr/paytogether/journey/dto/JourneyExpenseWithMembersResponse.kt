@@ -1,5 +1,6 @@
 package kr.paytogether.journey.dto
 
+import kr.paytogether.exchange.entity.ExchangeRate
 import kr.paytogether.journey.entity.JourneyExpense
 import kr.paytogether.journey.entity.JourneyMemberLedger
 import java.math.BigDecimal
@@ -17,7 +18,9 @@ data class JourneyExpenseWithMembersResponse(
 
     val category: String,
 
-    val currency: String,
+    val baseCurrency: String,
+
+    val quoteCurrency: String,
 
     val amount: BigDecimal,
 
@@ -28,18 +31,20 @@ data class JourneyExpenseWithMembersResponse(
     val members: List<JourneyExpenseMemberResponse>,
 ) {
     companion object {
-        fun of(expense: JourneyExpense, payerName: String, members: List<JourneyExpenseMemberResponse>) = JourneyExpenseWithMembersResponse(
-            journeyExpenseId = expense.journeyExpenseId!!,
-            journeyId = expense.journeyId,
-            payerName = payerName,
-            expenseDate = expense.expenseDate,
-            category = expense.category,
-            currency = expense.currency,
-            amount = expense.amount.setScale(2, RoundingMode.FLOOR),
-            remainingAmount = expense.remainingAmount.setScale(2, RoundingMode.FLOOR),
-            memo = expense.memo,
-            members = members,
-        )
+        fun of(expense: JourneyExpense, exchangeRate: ExchangeRate, payerName: String, members: List<JourneyExpenseMemberResponse>) =
+            JourneyExpenseWithMembersResponse(
+                journeyExpenseId = expense.journeyExpenseId!!,
+                journeyId = expense.journeyId,
+                payerName = payerName,
+                expenseDate = expense.expenseDate,
+                category = expense.category,
+                baseCurrency = expense.currency,
+                quoteCurrency = exchangeRate.quoteCurrency,
+                amount = (expense.amount * exchangeRate.rate).setScale(2, RoundingMode.FLOOR),
+                remainingAmount = (expense.remainingAmount * exchangeRate.rate).setScale(2, RoundingMode.FLOOR),
+                memo = expense.memo,
+                members = members,
+            )
     }
 
     data class JourneyExpenseMemberResponse(
