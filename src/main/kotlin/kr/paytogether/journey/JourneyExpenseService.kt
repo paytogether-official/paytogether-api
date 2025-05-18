@@ -120,7 +120,7 @@ class JourneyExpenseService(
             exchangeRate = exchange,
             payerName = memberMap[expense.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
             members = ledgers
-                .distinctBy { it.journeyMemberId }
+                .filter { it.amount < BigDecimal.ZERO }
                 .map {
                     JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
                         ledger = it,
