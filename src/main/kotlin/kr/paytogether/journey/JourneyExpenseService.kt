@@ -1,6 +1,8 @@
 package kr.paytogether.journey
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kr.paytogether.exchange.ExchangeRateService
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseResponse
@@ -15,6 +17,7 @@ import kr.paytogether.shared.exception.BadRequestException
 import kr.paytogether.shared.exception.ErrorCode
 import kr.paytogether.shared.exception.NotFoundException
 import kr.paytogether.shared.utils.notEqIgnoreScale
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -74,7 +77,7 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenses(journeyId: String, quoteCurrency: String): List<JourneyExpenseWithMembersResponse> {
+    suspend fun getExpenses(journeyId: String, quoteCurrency: String, pageable: Pageable): Flow<JourneyExpenseWithMembersResponse> {
 
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val ledgerMap = journeyMemberLedgerRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
@@ -83,7 +86,7 @@ class JourneyExpenseService(
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
         val exchange = exchangeRateService.getExchangeRate(journey.baseCurrency, quoteCurrency)
 
-        return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).map {
+        return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, pageable).map {
             JourneyExpenseWithMembersResponse.of(
                 expense = it,
                 exchange,
@@ -114,11 +117,10 @@ class JourneyExpenseService(
 
         return JourneyExpenseWithMembersResponse.of(
             expense = expense,
-            exchange,
-            payerName = journeyMemberRepository.findById(expense.expensePayerId)?.name
-                ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
+            exchangeRate = exchange,
+            payerName = memberMap[expense.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
             members = ledgers
-                .filter { it.amount < BigDecimal.ZERO }
+                .distinctBy { it.journeyMemberId }
                 .map {
                     JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
                         ledger = it,

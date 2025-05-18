@@ -5,6 +5,9 @@ import kr.paytogether.journey.dto.JourneyCreate
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
 import kr.paytogether.journey.dto.JourneyUpdate
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -61,7 +64,8 @@ class JourneyController(
     suspend fun getJourneyExpenses(
         @PathVariable journeyId: String,
         @RequestParam quoteCurrency: String = "KRW",
-    ) = journeyExpenseService.getExpenses(journeyId, quoteCurrency)
+        @PageableDefault(sort = ["expenseDate"], direction = Sort.Direction.DESC, size = Int.MAX_VALUE) pageable: Pageable,
+    ) = journeyExpenseService.getExpenses(journeyId, quoteCurrency, pageable)
 
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
     suspend fun getJourneyExpense(

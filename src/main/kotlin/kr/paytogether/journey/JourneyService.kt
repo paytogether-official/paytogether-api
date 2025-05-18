@@ -44,7 +44,7 @@ class JourneyService(
     suspend fun getJourney(journeyId: String): JourneyResponse {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
         val members = journeyMemberRepository.findByJourneyId(journey.journeyId).map { JourneyMemberResponse.from(it) }.toList()
-        val totalExpenseAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).sumOf { it.amount }
+        val totalExpenseAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).toList().sumOf { it.amount }
         return JourneyResponse.of(journey, members, totalExpenseAmount)
     }
 
@@ -94,7 +94,7 @@ class JourneyService(
         if (journeySettlementRepository.existsByJourneyId(journeyId)) {
             throw BadRequestException(DUPLICATE, "Journey already settled for journeyId: $journeyId")
         }
-        val totalRemainingAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).sumOf { it.remainingAmount }
+        val totalRemainingAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).toList().sumOf { it.remainingAmount }
         val members = journeyMemberRepository.findByJourneyId(journey.journeyId)
         val ledgers = journeyMemberLedgerRepository.findJourneyLedgerSum(journey.journeyId)
             .map { JourneyLedgerSum.from(it) }
@@ -187,8 +187,8 @@ class JourneyService(
         val settlement = journeySettlementRepository.findByJourneyId(journeyId)
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
-        val totalAmount = expenses.sumOf { it.amount }
-        val memberExpenseMap = expenses
+        val totalAmount = expenses.toList().sumOf { it.amount }
+        val memberExpenseMap = expenses.toList()
             .groupBy { it.expensePayerId }
             .map { (expensePayerId, expenses) ->
                 JourneyLedgerSum(
@@ -208,7 +208,7 @@ class JourneyService(
                         ?: throw NotFoundException("Member not found by memberId: ${it.toMemberId}")
                 )
             },
-            expenseCategories = expenses.groupBy { it.category }
+            expenseCategories = expenses.toList().groupBy { it.category }
                 .map { (category, expenses) ->
                     val amount = expenses.sumOf { it.amount }
                     val percentage = amount.divide(totalAmount, 4, RoundingMode.HALF_UP)
