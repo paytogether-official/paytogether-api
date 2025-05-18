@@ -72,13 +72,23 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenses(journeyId: String): List<JourneyExpenseResponse> {
+    suspend fun getExpenses(journeyId: String): List<JourneyExpenseWithMembersResponse> {
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
+        val ledgerMap = journeyMemberLedgerRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
+            .groupBy { it.journeyExpenseId }
 
         return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId).map {
-            JourneyExpenseResponse.of(
+            JourneyExpenseWithMembersResponse.of(
                 expense = it,
                 payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
+                members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
+                    ?.map { ledger ->
+                        JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
+                            ledger = ledger,
+                            name = memberMap[ledger.journeyMemberId]?.name
+                                ?: throw NotFoundException("Member not found by id: ${ledger.journeyMemberId}"),
+                        )
+                    } ?: emptyList()
             )
         }
     }

@@ -9,6 +9,8 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 interface JourneyMemberLedgerRepository : CoroutineCrudRepository<JourneyMemberLedger, Long> {
     suspend fun findByJourneyExpenseIdAndDeletedAtIsNull(journeyExpenseId: Long): List<JourneyMemberLedger>
 
+    suspend fun findByJourneyIdAndDeletedAtIsNull(journeyId: String): List<JourneyMemberLedger>
+
     @Query("""
         SELECT journey_member_id, SUM(amount) AS amount
         FROM journey_member_ledger
