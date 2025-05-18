@@ -24,7 +24,8 @@ class JourneyController(
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}")
     suspend fun getJourney(
         @PathVariable journeyId: String,
-    ) = journeyService.getJourney(journeyId)
+        @RequestParam quoteCurrency: String = "KRW",
+    ) = journeyService.getJourney(journeyId, quoteCurrency)
 
     @GetMapping("/journeys")
     suspend fun getJourneys(

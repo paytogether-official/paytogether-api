@@ -41,11 +41,19 @@ class JourneyService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getJourney(journeyId: String): JourneyResponse {
+    suspend fun getJourney(journeyId: String, quoteCurrency: String): JourneyResponse {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
         val members = journeyMemberRepository.findByJourneyId(journey.journeyId).map { JourneyMemberResponse.from(it) }.toList()
-        val totalExpenseAmount = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).toList().sumOf { it.amount }
-        return JourneyResponse.of(journey, members, totalExpenseAmount)
+        val (totalExpenseAmount, totalExpenseCount) = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).toList()
+            .let { expenses ->
+                val rate = if (journey.baseCurrency != quoteCurrency) {
+                    journey.exchangeRate
+                } else {
+                    BigDecimal.ONE
+                }
+                Pair(expenses.sumOf { it.amount } * rate, expenses.size)
+            }
+        return JourneyResponse.of(journey, members, totalExpenseAmount, totalExpenseCount)
     }
 
     @Transactional(readOnly = true)
@@ -55,12 +63,11 @@ class JourneyService(
             .mapValues { (_, members) -> members.map { JourneyMemberResponse.from(it) } }
         val journeyExpenseMap = journeyExpenseRepository.findByJourneyIdInAndDeletedAtIsNull(journeyIds)
             .groupBy { it.journeyId }
-            .mapValues { (_, expenses) -> expenses.sumOf { it.amount } }
 
         return journeys.map { journey ->
             val members = memberMap[journey.journeyId] ?: emptyList()
-            val totalExpenseAmount = journeyExpenseMap[journey.journeyId] ?: BigDecimal.ZERO
-            JourneyResponse.of(journey, members, totalExpenseAmount)
+            val expenses = journeyExpenseMap[journey.journeyId] ?: emptyList()
+            JourneyResponse.of(journey, members, expenses.sumOf { it.amount }, expenses.size)
         }
     }
 

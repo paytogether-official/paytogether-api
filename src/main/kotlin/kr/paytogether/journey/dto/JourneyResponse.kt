@@ -27,6 +27,8 @@ data class JourneyResponse(
 
     val totalExpenseAmount: BigDecimal,
 
+    val totalExpenseCount: Int,
+
     val closedAt: LocalDateTime?,
 
     val createdAt: LocalDateTime,
@@ -34,7 +36,7 @@ data class JourneyResponse(
     val members: List<JourneyMemberResponse>,
 ) {
     companion object {
-        fun of(journey: Journey, members: List<JourneyMemberResponse>, totalExpenseAmount: BigDecimal = BigDecimal.ZERO): JourneyResponse {
+        fun of(journey: Journey, members: List<JourneyMemberResponse>, totalExpenseAmount: BigDecimal = BigDecimal.ZERO, totalExpenseCount: Int = 0): JourneyResponse {
             require(journey.createdAt != null) { "Journey createdAt cannot be null" }
             return JourneyResponse(
                 journeyId = journey.journeyId,
@@ -49,6 +51,7 @@ data class JourneyResponse(
                 createdAt = journey.createdAt.toLocalDateTime(),
                 members = members,
                 totalExpenseAmount = totalExpenseAmount.setScale(2, RoundingMode.FLOOR),
+                totalExpenseCount = totalExpenseCount,
             )
         }
     }
