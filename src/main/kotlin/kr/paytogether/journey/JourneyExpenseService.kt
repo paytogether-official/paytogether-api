@@ -3,7 +3,6 @@ package kr.paytogether.journey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
-import kr.paytogether.exchange.ExchangeRateService
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseResponse
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
@@ -28,7 +27,6 @@ class JourneyExpenseService(
     private val journeyMemberRepository: JourneyMemberRepository,
     private val journeyExpenseRepository: JourneyExpenseRepository,
     private val journeyMemberLedgerRepository: JourneyMemberLedgerRepository,
-    private val exchangeRateService: ExchangeRateService,
 ) {
 
     @Transactional
@@ -84,12 +82,19 @@ class JourneyExpenseService(
             .groupBy { it.journeyExpenseId }
 
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
-        val exchange = exchangeRateService.getExchangeRate(journey.baseCurrency, quoteCurrency)
 
         return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, pageable).map {
             JourneyExpenseWithMembersResponse.of(
                 expense = it,
-                exchange,
+                quoteCurrency = quoteCurrency,
+                exchangeRate = when {
+                    journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
+                    journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
+                    else -> throw BadRequestException(
+                        ErrorCode.VALIDATION_ERROR,
+                        "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
+                    )
+                },
                 payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
                 members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
                     ?.map { ledger ->
@@ -113,11 +118,18 @@ class JourneyExpenseService(
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
 
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
-        val exchange = exchangeRateService.getExchangeRate(journey.baseCurrency, quoteCurrency)
 
         return JourneyExpenseWithMembersResponse.of(
             expense = expense,
-            exchangeRate = exchange,
+            quoteCurrency = quoteCurrency,
+            exchangeRate = when {
+                journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
+                journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
+                else -> throw BadRequestException(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
+                )
+            },
             payerName = memberMap[expense.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
             members = ledgers
                 .filter { it.amount < BigDecimal.ZERO }

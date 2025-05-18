@@ -1,6 +1,5 @@
 package kr.paytogether.journey.dto
 
-import kr.paytogether.exchange.entity.ExchangeRate
 import kr.paytogether.journey.entity.JourneyExpense
 import kr.paytogether.journey.entity.JourneyMemberLedger
 import java.math.BigDecimal
@@ -31,7 +30,7 @@ data class JourneyExpenseWithMembersResponse(
     val members: List<JourneyExpenseMemberResponse>,
 ) {
     companion object {
-        fun of(expense: JourneyExpense, exchangeRate: ExchangeRate, payerName: String, members: List<JourneyExpenseMemberResponse>) =
+        fun of(expense: JourneyExpense, quoteCurrency: String, exchangeRate: BigDecimal, payerName: String, members: List<JourneyExpenseMemberResponse>) =
             JourneyExpenseWithMembersResponse(
                 journeyExpenseId = expense.journeyExpenseId!!,
                 journeyId = expense.journeyId,
@@ -39,9 +38,9 @@ data class JourneyExpenseWithMembersResponse(
                 expenseDate = expense.expenseDate,
                 category = expense.category,
                 baseCurrency = expense.currency,
-                quoteCurrency = exchangeRate.quoteCurrency,
-                amount = (expense.amount * exchangeRate.rate).setScale(2, RoundingMode.FLOOR),
-                remainingAmount = (expense.remainingAmount * exchangeRate.rate).setScale(2, RoundingMode.FLOOR),
+                quoteCurrency = quoteCurrency,
+                amount = (expense.amount * exchangeRate).setScale(2, RoundingMode.FLOOR),
+                remainingAmount = (expense.remainingAmount * exchangeRate).setScale(2, RoundingMode.FLOOR),
                 memo = expense.memo,
                 members = members,
             )

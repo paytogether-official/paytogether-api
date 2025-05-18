@@ -46,12 +46,15 @@ class JourneyService(
         val members = journeyMemberRepository.findByJourneyId(journey.journeyId).map { JourneyMemberResponse.from(it) }.toList()
         val (totalExpenseAmount, totalExpenseCount) = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).toList()
             .let { expenses ->
-                val rate = if (journey.baseCurrency != quoteCurrency) {
-                    journey.exchangeRate
-                } else {
-                    BigDecimal.ONE
+                val exchangeRate = when {
+                    journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
+                    journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
+                    else -> throw BadRequestException(
+                        ErrorCode.VALIDATION_ERROR,
+                        "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
+                    )
                 }
-                Pair(expenses.sumOf { it.amount } * rate, expenses.size)
+                Pair(expenses.sumOf { it.amount } * exchangeRate, expenses.size)
             }
         return JourneyResponse.of(journey, members, totalExpenseAmount, totalExpenseCount)
     }
