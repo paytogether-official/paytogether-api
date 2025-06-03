@@ -18,7 +18,11 @@ data class JourneyExpenseCreate(
     val payerName: String,
 
     @field:NotBlank
+    @field:Length(max = 100)
     val category: String,
+
+    @field:Length(max = 255)
+    val categoryDescription: String = category,
 
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     val expenseDate: LocalDate,
@@ -57,6 +61,13 @@ data class JourneyExpenseCreate(
                 "Remaining amount is not matched, expected: ${members.first().amount}, actual: ${members.joinToString { it.amount.toString() }}"
             )
         }
+
+        if (setOf("기타", "식비", "교통", "관광", "쇼핑", "숙소").contains(category).not()) {
+            throw BadRequestException(
+                ErrorCode.VALIDATION_ERROR,
+                "Invalid category: $category. Valid categories are 기타, 식비, 교통, 관광, 쇼핑, 숙소."
+            )
+        }
     }
 
     fun toEntity(journeyId: String, expensePayerId: Long): JourneyExpense {
@@ -64,6 +75,7 @@ data class JourneyExpenseCreate(
             journeyId = journeyId,
             expensePayerId = expensePayerId,
             category = category,
+            categoryDescription = categoryDescription,
             expenseDate = expenseDate,
             currency = currency,
             amount = amount,

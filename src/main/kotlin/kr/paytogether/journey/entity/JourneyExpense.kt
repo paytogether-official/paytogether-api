@@ -18,6 +18,8 @@ data class JourneyExpense(
 
     val category: String,
 
+    val categoryDescription: String,
+
     val expenseDate: LocalDate,
 
     val currency: String,
