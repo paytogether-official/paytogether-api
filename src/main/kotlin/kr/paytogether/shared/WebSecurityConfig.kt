@@ -3,6 +3,7 @@ package kr.paytogether.shared
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
+import org.springframework.security.authorization.method.AuthorizationAdvisorProxyFactory.withDefaults
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -24,8 +25,8 @@ class WebSecurityConfig {
                 authorize(pathMatchers("/actuator/**"), authenticated)
                 authorize(anyExchange, permitAll)
             }
+            httpBasic { withDefaults() }
             formLogin { disable() }
-            httpBasic { disable() }
             csrf { disable() }
             cors { corsConfigurationSource() }
             exceptionHandling {

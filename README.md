@@ -19,6 +19,10 @@ Then, fill in the `.env` file with the required values.
 - `DATABASE_USERNAME`: The username to connect to your database.
 - `DATABASE_PASSWORD`: The password to connect to your database.
 
+**Security Configuration**
+- `SPRING_SECURITY_USER_NAME`: The username for the Basic Auth.
+- `SPRING_SECURITY_USER_PASSWORD`: The password for the Basic Auth.
+
 **Financial Data API Configuration**
 - `TWELVE_DATA_API_KEY`: The API key for [Twelve Data](https://twelvedata.com).
 
