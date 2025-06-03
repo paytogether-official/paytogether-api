@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  paytogether-app:
+    image: ghcr.io/paytogether-official/paytogether-api:latest
+    container_name: paytogether-app
+    ports:
+      - "80:8080"
+    env_file:
+      - .env.paytogether
+    restart: always

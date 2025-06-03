@@ -55,12 +55,14 @@ jobs:
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: 22
           script: |
-            CONTAINER_ID=$(sudo docker ps -q --filter "publish=80")
-
-            if [ ! -z "$CONTAINER_ID" ]; then
-            sudo docker stop $CONTAINER_ID
-            sudo docker rm $CONTAINER_ID
-            fi
+            echo "Pulling the latest paytogether image from GHCR"
+            sudo docker-compose pull paytogether-app
             
-            sudo docker pull ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-            sudo docker run --name ${{ env.IMAGE_NAME }}-${{ github.sha }} -d -p 80:8080 --env-file=.env.paytogether ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+            echo "Stopping and removing existing containers"
+            sudo docker-compose down
+            
+            echo "Starting containers with updated image"
+            sudo docker-compose up -d
+            
+            echo "Deployment completed. Current containers:"
+            sudo docker-compose ps
