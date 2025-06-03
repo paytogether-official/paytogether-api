@@ -17,6 +17,8 @@ data class JourneyExpenseWithMembersResponse(
 
     val category: String,
 
+    val categoryDescription: String,
+
     val baseCurrency: String,
 
     val quoteCurrency: String,
@@ -37,6 +39,7 @@ data class JourneyExpenseWithMembersResponse(
                 payerName = payerName,
                 expenseDate = expense.expenseDate,
                 category = expense.category,
+                categoryDescription = expense.categoryDescription,
                 baseCurrency = expense.currency,
                 quoteCurrency = quoteCurrency,
                 amount = (expense.amount * exchangeRate).setScale(2, RoundingMode.FLOOR),
