@@ -22,7 +22,7 @@ data class JourneyExpenseCreate(
     val category: String,
 
     @field:Length(max = 255)
-    val categoryDescription: String = category,
+    var categoryDescription: String = category,
 
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     val expenseDate: LocalDate,
@@ -67,6 +67,10 @@ data class JourneyExpenseCreate(
                 ErrorCode.VALIDATION_ERROR,
                 "Invalid category: $category. Valid categories are 기타, 식비, 교통, 관광, 쇼핑, 숙소."
             )
+        }
+
+        if (categoryDescription.isBlank()) {
+            categoryDescription = category
         }
     }
 
