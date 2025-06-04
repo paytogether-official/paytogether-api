@@ -7,4 +7,26 @@ services:
       - "80:8080"
     env_file:
       - .env.paytogether
+    volumes:
+      - paytogether-logs:/app/logs
     restart: always
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - promtail-config:/etc/promtail
+      - paytogether-logs:/var/log/paytogether
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    restart: always
+    depends_on:
+      - paytogether-app
+
+volumes:
+  paytogether-logs: {}
+  promtail-config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./promtail-config.yaml

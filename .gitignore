@@ -40,7 +40,10 @@ out/
 .kotlin
 
 ### Environments ###
-.env
+.env.paytogether
 
 ### Database ###
 db/mysql/
+
+### Logs ###
+*.log
