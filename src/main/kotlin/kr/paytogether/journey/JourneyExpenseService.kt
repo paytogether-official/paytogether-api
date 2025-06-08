@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Service
 class JourneyExpenseService(
@@ -96,9 +97,14 @@ class JourneyExpenseService(
                     members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
                         ?.map { ledger ->
                             JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
-                                ledger = ledger,
+                                journeyMemberId = ledger.journeyMemberId,
                                 name = memberMap[ledger.journeyMemberId]?.name
                                     ?: throw NotFoundException("Member not found by id: ${ledger.journeyMemberId}"),
+                                amount = (ledger.amount * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)).negate()
+                                    .setScale(
+                                        2,
+                                        RoundingMode.HALF_UP
+                                    ),
                             )
                         } ?: emptyList()
                 )
@@ -128,8 +134,10 @@ class JourneyExpenseService(
                 .filter { it.amount < BigDecimal.ZERO }
                 .map {
                     JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
-                        ledger = it,
+                        journeyMemberId = it.journeyMemberId,
                         name = memberMap[it.journeyMemberId]?.name ?: throw NotFoundException("Member not found by id: ${it.journeyMemberId}"),
+                        amount = (it.amount * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)).negate()
+                            .setScale(2, RoundingMode.HALF_UP),
                     )
                 }
         )

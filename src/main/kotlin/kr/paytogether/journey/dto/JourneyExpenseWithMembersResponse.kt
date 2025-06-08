@@ -1,7 +1,6 @@
 package kr.paytogether.journey.dto
 
 import kr.paytogether.journey.entity.JourneyExpense
-import kr.paytogether.journey.entity.JourneyMemberLedger
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -57,10 +56,10 @@ data class JourneyExpenseWithMembersResponse(
         val amount: BigDecimal,
     ) {
         companion object {
-            fun of(ledger: JourneyMemberLedger, name: String) = JourneyExpenseMemberResponse(
-                journeyMemberId = ledger.journeyMemberId,
+            fun of(journeyMemberId: Long, amount: BigDecimal, name: String) = JourneyExpenseMemberResponse(
+                journeyMemberId = journeyMemberId,
                 name = name,
-                amount = ledger.amount.negate().stripTrailingZeros(),
+                amount = amount,
             )
         }
     }
