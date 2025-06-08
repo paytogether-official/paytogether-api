@@ -52,18 +52,18 @@ data class JourneySettlementResponse(
 }
 
 data class ExpenseCategoryResponse(
-    val name: String,
+    val category: String,
     val amount: BigDecimal,
     val percentage: BigDecimal,
 ) {
     companion object {
         fun of(
-            name: String,
+            category: String,
             amount: BigDecimal,
             percentage: BigDecimal,
         ): ExpenseCategoryResponse =
             ExpenseCategoryResponse(
-                name = name,
+                category = category,
                 amount = amount.setScale(2, RoundingMode.HALF_UP),
                 percentage = percentage.setScale(2, RoundingMode.HALF_UP),
             )

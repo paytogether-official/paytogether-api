@@ -258,7 +258,7 @@ class JourneyService(
                     val amount = expenses.sumOf { it.amount }
                     val percentage = amount.divide(totalAmount, 4, RoundingMode.HALF_UP)
                     ExpenseCategoryResponse.of(
-                        name = category,
+                        category = category,
                         amount = amount.multiply(if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate),
                         percentage = percentage.multiply(BigDecimal(100))
                     )
