@@ -1,12 +1,11 @@
 package kr.paytogether.journey.controller
 
 import jakarta.validation.Valid
-import kotlinx.coroutines.flow.Flow
 import kr.paytogether.journey.JourneyExpenseService
 import kr.paytogether.journey.JourneyService
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
-import kr.paytogether.journey.dto.JourneyExpenseWithMembersResponse
+import kr.paytogether.journey.dto.JourneyExpensesResponse
 import kr.paytogether.shared.exception.BadRequestException
 import kr.paytogether.shared.exception.ErrorCode
 import org.springframework.data.domain.Pageable
@@ -34,7 +33,7 @@ class JourneyExpenseController(
         @RequestParam category: String?,
         @RequestParam expenseDate: String?, // LocalDate format (yyyy-MM-dd) | "OTHER"
         @PageableDefault(sort = ["expenseDate"], direction = Sort.Direction.DESC, size = Int.MAX_VALUE) pageable: Pageable,
-    ): Flow<JourneyExpenseWithMembersResponse> {
+    ): JourneyExpensesResponse {
         fun validateExpenseDate(date: String?): Boolean {
             return when (date) {
                 null, "OTHER" -> true

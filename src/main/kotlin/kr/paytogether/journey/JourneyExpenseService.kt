@@ -1,13 +1,10 @@
 package kr.paytogether.journey
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kr.paytogether.journey.dto.JourneyExpenseCreate
-import kr.paytogether.journey.dto.JourneyExpenseResponse
-import kr.paytogether.journey.dto.JourneyExpenseUpdate
-import kr.paytogether.journey.dto.JourneyExpenseWithMembersResponse
+import kotlinx.coroutines.flow.toList
+import kr.paytogether.journey.dto.*
 import kr.paytogether.journey.entity.JourneyMemberLedger
 import kr.paytogether.journey.enums.Category
 import kr.paytogether.journey.repository.JourneyExpenseRepository
@@ -77,7 +74,7 @@ class JourneyExpenseService(
         category: String?,
         expenseDate: String?, // yyyy-MM-dd | "OTHER"
         pageable: Pageable,
-    ): Flow<JourneyExpenseWithMembersResponse> {
+    ): JourneyExpensesResponse {
 
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val ledgerMap = journeyMemberLedgerRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
@@ -85,7 +82,7 @@ class JourneyExpenseService(
 
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
 
-        return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, category, pageable)
+        val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, category, pageable)
             .filter { category == null || it.category == category }
             .filter {
                 expenseDate == null || it.expenseDate.toString() == expenseDate || (expenseDate == "OTHER" && (journey.startDate..journey.endDate).contains(
@@ -115,7 +112,13 @@ class JourneyExpenseService(
                             )
                         } ?: emptyList()
                 )
-            }
+            }.toList()
+
+        return JourneyExpensesResponse.of(
+            quoteCurrency = quoteCurrency,
+            totalAmount = expenses.sumOf { it.amount },
+            expenses = expenses,
+        )
     }
 
     @Transactional(readOnly = true)
