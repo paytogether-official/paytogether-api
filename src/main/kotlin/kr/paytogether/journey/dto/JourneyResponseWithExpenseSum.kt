@@ -8,7 +8,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class JourneyResponse(
+data class JourneyResponseWithExpenseSum(
     val journeyId: String,
 
     val baseCurrency: String,
@@ -32,6 +32,8 @@ data class JourneyResponse(
     val createdAt: LocalDateTime,
 
     val members: List<JourneyMemberResponse>,
+
+    val dailyExpenseSumByDate: List<DailyExpenseSum>,
 ) {
     companion object {
         fun of(
@@ -39,9 +41,10 @@ data class JourneyResponse(
             members: List<JourneyMemberResponse>,
             totalExpenseAmount: BigDecimal = BigDecimal.ZERO,
             totalExpenseCount: Int = 0,
-        ): JourneyResponse {
+            dailyExpenseSumByDate: List<DailyExpenseSum>,
+        ): JourneyResponseWithExpenseSum {
             require(journey.createdAt != null) { "Journey createdAt cannot be null" }
-            return JourneyResponse(
+            return JourneyResponseWithExpenseSum(
                 journeyId = journey.journeyId,
                 baseCurrency = journey.baseCurrency,
                 exchangeRate = journey.exchangeRate.setScale(2, RoundingMode.FLOOR),
@@ -54,6 +57,7 @@ data class JourneyResponse(
                 members = members,
                 totalExpenseAmount = totalExpenseAmount.setScale(2, RoundingMode.FLOOR),
                 totalExpenseCount = totalExpenseCount,
+                dailyExpenseSumByDate = dailyExpenseSumByDate
             )
         }
     }

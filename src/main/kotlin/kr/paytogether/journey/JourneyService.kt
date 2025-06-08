@@ -41,10 +41,12 @@ class JourneyService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getJourney(journeyId: String, quoteCurrency: String): JourneyResponse {
+    suspend fun getJourney(journeyId: String, quoteCurrency: String): JourneyResponseWithExpenseSum {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
         val members = journeyMemberRepository.findByJourneyId(journey.journeyId).map { JourneyMemberResponse.from(it) }.toList()
-        val (totalExpenseAmount, totalExpenseCount) = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).toList()
+        val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journey.journeyId).toList()
+
+        val (totalExpenseAmount, totalExpenseCount) = expenses
             .let { expenses ->
                 val exchangeRate = when {
                     journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
@@ -52,7 +54,18 @@ class JourneyService(
                 }
                 Pair(expenses.sumOf { it.amount } * exchangeRate, expenses.size)
             }
-        return JourneyResponse.of(journey, members, totalExpenseAmount, totalExpenseCount)
+
+        val dailyExpenseSumByDate = expenses
+            .groupBy { it.expenseDate }
+            .map { (date, expenses) ->
+                DailyExpenseSum(
+                    date = date,
+                    totalAmount = expenses.sumOf { it.amount } * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)
+                )
+            }
+            .sortedBy { it.date }
+
+        return JourneyResponseWithExpenseSum.of(journey, members, totalExpenseAmount, totalExpenseCount, dailyExpenseSumByDate)
     }
 
     @Transactional(readOnly = true)
