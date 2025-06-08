@@ -11,7 +11,6 @@ interface JourneyRepository : CoroutineCrudRepository<Journey, String> {
         INSERT INTO journey (
             journey_id,
             base_currency,
-            quote_currency,
             exchange_rate,
             title,
             start_date,
@@ -20,7 +19,6 @@ interface JourneyRepository : CoroutineCrudRepository<Journey, String> {
         ) VALUES (
             :#{#journey.journeyId},
             :#{#journey.baseCurrency},
-            :#{#journey.quoteCurrency},
             :#{#journey.exchangeRate},
             :#{#journey.title},
             :#{#journey.startDate},

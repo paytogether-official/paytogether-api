@@ -97,11 +97,7 @@ class JourneyExpenseService(
                     quoteCurrency = quoteCurrency,
                     exchangeRate = when {
                         journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
-                        journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
-                        else -> throw BadRequestException(
-                            ErrorCode.VALIDATION_ERROR,
-                            "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
-                        )
+                        else -> journey.exchangeRate
                     },
                     payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
                     members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
@@ -132,11 +128,7 @@ class JourneyExpenseService(
             quoteCurrency = quoteCurrency,
             exchangeRate = when {
                 journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
-                journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
-                else -> throw BadRequestException(
-                    ErrorCode.VALIDATION_ERROR,
-                    "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
-                )
+                else -> journey.exchangeRate
             },
             payerName = memberMap[expense.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${expense.expensePayerId}"),
             members = ledgers

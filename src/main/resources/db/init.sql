@@ -159,7 +159,6 @@ CREATE TABLE IF NOT EXISTS journey
 (
     journey_id     VARCHAR(255)   NOT NULL PRIMARY KEY,
     base_currency  VARCHAR(10)    NOT NULL DEFAULT 'USD',
-    quote_currency VARCHAR(10)    NOT NULL DEFAULT 'KRW',
     exchange_rate  DECIMAL(32, 8) NOT NULL,
     title          VARCHAR(255)   NOT NULL,
     start_date     DATE           NOT NULL,

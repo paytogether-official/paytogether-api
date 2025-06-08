@@ -13,8 +13,6 @@ data class JourneyResponse(
 
     val baseCurrency: String,
 
-    val quoteCurrency: String,
-
     val exchangeRate: BigDecimal,
 
     val title: String,
@@ -41,7 +39,6 @@ data class JourneyResponse(
             return JourneyResponse(
                 journeyId = journey.journeyId,
                 baseCurrency = journey.baseCurrency,
-                quoteCurrency = journey.quoteCurrency,
                 exchangeRate = journey.exchangeRate.setScale(2, RoundingMode.FLOOR),
                 title = journey.title,
                 startDate = journey.startDate,

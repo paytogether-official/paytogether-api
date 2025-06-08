@@ -48,11 +48,7 @@ class JourneyService(
             .let { expenses ->
                 val exchangeRate = when {
                     journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
-                    journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
-                    else -> throw BadRequestException(
-                        ErrorCode.VALIDATION_ERROR,
-                        "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
-                    )
+                    else -> journey.exchangeRate
                 }
                 Pair(expenses.sumOf { it.amount } * exchangeRate, expenses.size)
             }

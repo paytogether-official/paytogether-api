@@ -13,8 +13,6 @@ data class Journey(
 
     val baseCurrency: String,
 
-    val quoteCurrency: String,
-
     val exchangeRate: BigDecimal,
 
     val title: String,
