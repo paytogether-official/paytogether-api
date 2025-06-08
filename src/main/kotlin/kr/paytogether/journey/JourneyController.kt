@@ -54,7 +54,8 @@ class JourneyController(
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/settlement")
     suspend fun getJourneySettlement(
         @PathVariable journeyId: String,
-    ) = journeyService.getSettlement(journeyId)
+        @RequestParam quoteCurrency: String = "KRW",
+    ) = journeyService.getSettlement(journeyId, quoteCurrency)
 
     @PostMapping("/journeys/{journeyId:[a-z0-9]+}/expenses")
     suspend fun createExpense(

@@ -1,6 +1,5 @@
 package kr.paytogether.journey.dto
 
-import kr.paytogether.journey.entity.JourneySettlement
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -36,16 +35,18 @@ data class JourneySettlementResponse(
 
     companion object {
         fun of(
-            settlement: JourneySettlement,
+            fromMemberId: Long,
+            toMemberId: Long,
+            amount: BigDecimal,
             fromMemberName: String,
             toMemberName: String,
         ): JourneySettlementResponse =
             JourneySettlementResponse(
-                fromMemberId = settlement.fromMemberId,
+                fromMemberId = fromMemberId,
                 fromMemberName = fromMemberName,
-                toMemberId = settlement.toMemberId,
+                toMemberId = toMemberId,
                 toMemberName = toMemberName,
-                amount = settlement.amount
+                amount = amount.setScale(2, RoundingMode.HALF_UP)
             )
     }
 }
@@ -63,7 +64,7 @@ data class ExpenseCategoryResponse(
         ): ExpenseCategoryResponse =
             ExpenseCategoryResponse(
                 name = name,
-                amount = amount,
+                amount = amount.setScale(2, RoundingMode.HALF_UP),
                 percentage = percentage.setScale(2, RoundingMode.HALF_UP),
             )
     }

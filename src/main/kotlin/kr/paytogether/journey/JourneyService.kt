@@ -225,7 +225,8 @@ class JourneyService(
         journeyRepository.save(journey.copy(closedAt = null))
     }
 
-    suspend fun getSettlement(journeyId: String): JourneySettlementResultResponse {
+    suspend fun getSettlement(journeyId: String, quoteCurrency: String): JourneySettlementResultResponse {
+        val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by journeyId: $journeyId")
         val settlement = journeySettlementRepository.findByJourneyId(journeyId)
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val expenses = journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
@@ -235,7 +236,7 @@ class JourneyService(
             .map { (expensePayerId, expenses) ->
                 JourneyLedgerSum(
                     journeyMemberId = expensePayerId,
-                    amount = expenses.sumOf { it.amount }
+                    amount = expenses.sumOf { it.amount * if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate }
                 )
             }
             .associateBy { it.journeyMemberId }
@@ -243,7 +244,9 @@ class JourneyService(
             journeyId = journeyId,
             settlements = settlement.map {
                 JourneySettlementResponse.of(
-                    settlement = it,
+                    fromMemberId = it.fromMemberId,
+                    toMemberId = it.toMemberId,
+                    amount = it.amount.multiply(if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate),
                     fromMemberName = memberMap[it.fromMemberId]?.name
                         ?: throw NotFoundException("Member not found by memberId: ${it.fromMemberId}"),
                     toMemberName = memberMap[it.toMemberId]?.name
@@ -256,7 +259,7 @@ class JourneyService(
                     val percentage = amount.divide(totalAmount, 4, RoundingMode.HALF_UP)
                     ExpenseCategoryResponse.of(
                         name = category,
-                        amount = amount,
+                        amount = amount.multiply(if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate),
                         percentage = percentage.multiply(BigDecimal(100))
                     )
                 }
