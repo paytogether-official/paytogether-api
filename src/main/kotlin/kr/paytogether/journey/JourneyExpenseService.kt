@@ -74,6 +74,7 @@ class JourneyExpenseService(
         journeyId: String,
         quoteCurrency: String,
         category: String?,
+        expenseDate: String?, // yyyy-MM-dd | "OTHER"
         pageable: Pageable,
     ): Flow<JourneyExpenseWithMembersResponse> {
 
@@ -85,6 +86,7 @@ class JourneyExpenseService(
 
         return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, category, pageable)
             .filter { category == null || it.category == category }
+            .filter { expenseDate == null || it.expenseDate.toString() == expenseDate || (expenseDate == "OTHER" && (journey.startDate .. journey.endDate).contains(it.expenseDate).not()) }
             .map {
                 JourneyExpenseWithMembersResponse.of(
                     expense = it,

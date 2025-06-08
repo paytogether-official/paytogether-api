@@ -55,17 +55,40 @@ class JourneyService(
                 Pair(expenses.sumOf { it.amount } * exchangeRate, expenses.size)
             }
 
-        val dailyExpenseSumByDate = expenses
+        val dailyExpenseSumByDateMap = expenses
             .groupBy { it.expenseDate }
             .map { (date, expenses) ->
                 DailyExpenseSum(
+                    date = if ((journey.startDate..journey.endDate).contains(date)) date.toString() else "OTHER",
+                    totalAmount = (expenses.sumOf { it.amount } * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)).setScale(
+                        2,
+                        RoundingMode.FLOOR
+                    )
+                )
+            }.associateBy { it.date }
+
+        val dailyExpenseSumByDate = mutableListOf<DailyExpenseSum>()
+        journey.startDate.datesUntil(journey.endDate.plusDays(1))
+            .map { date -> date.toString() }
+            .map { date ->
+                DailyExpenseSum(
                     date = date,
-                    totalAmount = (expenses.sumOf { it.amount } * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)).setScale(2, RoundingMode.FLOOR)
+                    totalAmount = dailyExpenseSumByDateMap[date]?.totalAmount ?: BigDecimal.ZERO
                 )
             }
-            .sortedBy { it.date }
+            .forEach { dailyExpenseSumByDate.add(it) }
 
-        return JourneyResponseWithExpenseSum.of(journey, members, totalExpenseAmount, totalExpenseCount, dailyExpenseSumByDate)
+        dailyExpenseSumByDate.add(
+            DailyExpenseSum(
+                date = "OTHER",
+                totalAmount = dailyExpenseSumByDateMap["OTHER"]?.totalAmount ?: BigDecimal.ZERO
+            )
+        )
+
+        return JourneyResponseWithExpenseSum.of(
+            journey = journey, members = members, totalExpenseAmount = totalExpenseAmount, totalExpenseCount = totalExpenseCount,
+            dailyExpenseSumByDate = dailyExpenseSumByDate
+        )
     }
 
     @Transactional(readOnly = true)

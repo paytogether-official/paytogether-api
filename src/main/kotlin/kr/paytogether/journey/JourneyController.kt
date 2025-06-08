@@ -1,15 +1,16 @@
 package kr.paytogether.journey
 
 import jakarta.validation.Valid
-import kr.paytogether.journey.dto.JourneyCreate
-import kr.paytogether.journey.dto.JourneyExpenseCreate
-import kr.paytogether.journey.dto.JourneyExpenseUpdate
-import kr.paytogether.journey.dto.JourneyUpdate
+import kotlinx.coroutines.flow.Flow
+import kr.paytogether.journey.dto.*
+import kr.paytogether.shared.exception.BadRequestException
+import kr.paytogether.shared.exception.ErrorCode
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 
 @RestController
 class JourneyController(
@@ -66,8 +67,29 @@ class JourneyController(
         @PathVariable journeyId: String,
         @RequestParam quoteCurrency: String = "KRW",
         @RequestParam category: String?,
+        @RequestParam expenseDate: String?, // LocalDate format (yyyy-MM-dd) | "OTHER"
         @PageableDefault(sort = ["expenseDate"], direction = Sort.Direction.DESC, size = Int.MAX_VALUE) pageable: Pageable,
-    ) = journeyExpenseService.getExpenses(journeyId, quoteCurrency, category, pageable)
+    ): Flow<JourneyExpenseWithMembersResponse> {
+        fun validateExpenseDate(date: String?): Boolean {
+            return when (date) {
+                null, "OTHER" -> true
+                else -> try {
+                    LocalDate.parse(date)
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
+        }
+        if (validateExpenseDate(expenseDate).not()) {
+            throw BadRequestException(
+                ErrorCode.VALIDATION_ERROR,
+                "Invalid expenseDate format. Use 'yyyy-MM-dd' or 'OTHER'."
+            )
+        }
+
+        return journeyExpenseService.getExpenses(journeyId, quoteCurrency, category, expenseDate, pageable)
+    }
 
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
     suspend fun getJourneyExpense(
