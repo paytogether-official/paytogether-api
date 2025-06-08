@@ -65,8 +65,9 @@ class JourneyController(
     suspend fun getJourneyExpenses(
         @PathVariable journeyId: String,
         @RequestParam quoteCurrency: String = "KRW",
+        @RequestParam category: String?,
         @PageableDefault(sort = ["expenseDate"], direction = Sort.Direction.DESC, size = Int.MAX_VALUE) pageable: Pageable,
-    ) = journeyExpenseService.getExpenses(journeyId, quoteCurrency, pageable)
+    ) = journeyExpenseService.getExpenses(journeyId, quoteCurrency, category, pageable)
 
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
     suspend fun getJourneyExpense(

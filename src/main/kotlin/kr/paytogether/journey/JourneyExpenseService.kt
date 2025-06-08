@@ -2,6 +2,7 @@ package kr.paytogether.journey
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kr.paytogether.journey.dto.JourneyExpenseCreate
 import kr.paytogether.journey.dto.JourneyExpenseResponse
@@ -75,7 +76,12 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenses(journeyId: String, quoteCurrency: String, pageable: Pageable): Flow<JourneyExpenseWithMembersResponse> {
+    suspend fun getExpenses(
+        journeyId: String,
+        quoteCurrency: String,
+        category: String?,
+        pageable: Pageable,
+    ): Flow<JourneyExpenseWithMembersResponse> {
 
         val memberMap = journeyMemberRepository.findByJourneyId(journeyId).associateBy { it.journeyMemberId }
         val ledgerMap = journeyMemberLedgerRepository.findByJourneyIdAndDeletedAtIsNull(journeyId)
@@ -83,29 +89,31 @@ class JourneyExpenseService(
 
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
 
-        return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, pageable).map {
-            JourneyExpenseWithMembersResponse.of(
-                expense = it,
-                quoteCurrency = quoteCurrency,
-                exchangeRate = when {
-                    journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
-                    journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
-                    else -> throw BadRequestException(
-                        ErrorCode.VALIDATION_ERROR,
-                        "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
-                    )
-                },
-                payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
-                members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
-                    ?.map { ledger ->
-                        JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
-                            ledger = ledger,
-                            name = memberMap[ledger.journeyMemberId]?.name
-                                ?: throw NotFoundException("Member not found by id: ${ledger.journeyMemberId}"),
+        return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, category, pageable)
+            .filter { category == null || it.category == category }
+            .map {
+                JourneyExpenseWithMembersResponse.of(
+                    expense = it,
+                    quoteCurrency = quoteCurrency,
+                    exchangeRate = when {
+                        journey.baseCurrency == quoteCurrency -> BigDecimal.ONE
+                        journey.quoteCurrency == quoteCurrency -> journey.exchangeRate
+                        else -> throw BadRequestException(
+                            ErrorCode.VALIDATION_ERROR,
+                            "Invalid quote currency: $quoteCurrency, base currency: ${journey.baseCurrency}, quote currency: ${journey.quoteCurrency}"
                         )
-                    } ?: emptyList()
-            )
-        }
+                    },
+                    payerName = memberMap[it.expensePayerId]?.name ?: throw NotFoundException("Payer not found by id: ${it.expensePayerId}"),
+                    members = ledgerMap[it.journeyExpenseId]?.filter { ledger -> ledger.amount < BigDecimal.ZERO }
+                        ?.map { ledger ->
+                            JourneyExpenseWithMembersResponse.JourneyExpenseMemberResponse.of(
+                                ledger = ledger,
+                                name = memberMap[ledger.journeyMemberId]?.name
+                                    ?: throw NotFoundException("Member not found by id: ${ledger.journeyMemberId}"),
+                            )
+                        } ?: emptyList()
+                )
+            }
     }
 
     @Transactional(readOnly = true)
