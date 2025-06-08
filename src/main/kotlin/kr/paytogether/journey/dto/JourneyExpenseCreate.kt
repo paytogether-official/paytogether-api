@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.PositiveOrZero
 import kr.paytogether.journey.entity.JourneyExpense
+import kr.paytogether.journey.enums.Category
 import kr.paytogether.shared.exception.BadRequestException
 import kr.paytogether.shared.exception.ErrorCode
 import kr.paytogether.shared.utils.notEqIgnoreScale
@@ -17,12 +18,10 @@ data class JourneyExpenseCreate(
     @field:NotNull
     val payerName: String,
 
-    @field:NotBlank
-    @field:Length(max = 100)
-    val category: String,
+    val category: Category,
 
     @field:Length(max = 255)
-    var categoryDescription: String = category,
+    var categoryDescription: String = category.value,
 
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     val expenseDate: LocalDate,
@@ -62,15 +61,8 @@ data class JourneyExpenseCreate(
             )
         }
 
-        if (setOf("기타", "식비", "교통", "관광", "쇼핑", "숙소").contains(category).not()) {
-            throw BadRequestException(
-                ErrorCode.VALIDATION_ERROR,
-                "Invalid category: $category. Valid categories are 기타, 식비, 교통, 관광, 쇼핑, 숙소."
-            )
-        }
-
         if (categoryDescription.isBlank()) {
-            categoryDescription = category
+            categoryDescription = category.value
         }
     }
 
@@ -78,7 +70,7 @@ data class JourneyExpenseCreate(
         return JourneyExpense(
             journeyId = journeyId,
             expensePayerId = expensePayerId,
-            category = category,
+            category = category.value,
             categoryDescription = categoryDescription,
             expenseDate = expenseDate,
             currency = currency,
