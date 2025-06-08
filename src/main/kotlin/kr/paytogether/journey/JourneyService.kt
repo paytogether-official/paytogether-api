@@ -60,7 +60,7 @@ class JourneyService(
             .map { (date, expenses) ->
                 DailyExpenseSum(
                     date = date,
-                    totalAmount = expenses.sumOf { it.amount } * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)
+                    totalAmount = (expenses.sumOf { it.amount } * (if (journey.baseCurrency == quoteCurrency) BigDecimal.ONE else journey.exchangeRate)).setScale(2, RoundingMode.FLOOR)
                 )
             }
             .sortedBy { it.date }
