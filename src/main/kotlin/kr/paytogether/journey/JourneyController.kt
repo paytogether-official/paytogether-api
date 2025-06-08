@@ -92,6 +92,11 @@ class JourneyController(
         return journeyExpenseService.getExpenses(journeyId, quoteCurrency, category, expenseDate, pageable)
     }
 
+    @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/categories")
+    suspend fun getJourneyExpenseCategories(
+        @PathVariable journeyId: String,
+    ) = journeyExpenseService.getExpenseCategories(journeyId)
+
     @GetMapping("/journeys/{journeyId:[a-z0-9]+}/expenses/{expenseId:[0-9]+}")
     suspend fun getJourneyExpense(
         @PathVariable journeyId: String,

@@ -9,6 +9,7 @@ import kr.paytogether.journey.dto.JourneyExpenseResponse
 import kr.paytogether.journey.dto.JourneyExpenseUpdate
 import kr.paytogether.journey.dto.JourneyExpenseWithMembersResponse
 import kr.paytogether.journey.entity.JourneyMemberLedger
+import kr.paytogether.journey.enums.Category
 import kr.paytogether.journey.repository.JourneyExpenseRepository
 import kr.paytogether.journey.repository.JourneyMemberLedgerRepository
 import kr.paytogether.journey.repository.JourneyMemberRepository
@@ -86,7 +87,11 @@ class JourneyExpenseService(
 
         return journeyExpenseRepository.findByJourneyIdAndDeletedAtIsNull(journeyId, category, pageable)
             .filter { category == null || it.category == category }
-            .filter { expenseDate == null || it.expenseDate.toString() == expenseDate || (expenseDate == "OTHER" && (journey.startDate .. journey.endDate).contains(it.expenseDate).not()) }
+            .filter {
+                expenseDate == null || it.expenseDate.toString() == expenseDate || (expenseDate == "OTHER" && (journey.startDate..journey.endDate).contains(
+                    it.expenseDate
+                ).not())
+            }
             .map {
                 JourneyExpenseWithMembersResponse.of(
                     expense = it,
@@ -210,4 +215,10 @@ class JourneyExpenseService(
         journeyExpenseRepository.deleteById(expense.journeyExpenseId)
     }
 
+    @Transactional(readOnly = true)
+    suspend fun getExpenseCategories(journeyId: String): List<String> =
+        journeyExpenseRepository.findDistinctByJourneyIdAndDeletedAtIsNull(journeyId)
+            .map { Category.fromValue(it) }
+            .sortedBy { it.sort }
+            .map { it.value }
 }
