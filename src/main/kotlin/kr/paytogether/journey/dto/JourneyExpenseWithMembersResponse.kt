@@ -40,7 +40,7 @@ data class JourneyExpenseWithMembersResponse(
                 expenseDate = expense.expenseDate,
                 category = expense.category,
                 categoryDescription = expense.categoryDescription,
-                baseCurrency = expense.currency,
+                baseCurrency = expense.baseCurrency,
                 quoteCurrency = quoteCurrency,
                 amount = (expense.amount * exchangeRate).setScale(2, RoundingMode.FLOOR),
                 remainingAmount = (expense.remainingAmount * exchangeRate).setScale(2, RoundingMode.FLOOR),

@@ -1,7 +1,6 @@
 package kr.paytogether.journey.dto
 
 import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.PositiveOrZero
 import kr.paytogether.journey.entity.JourneyExpense
@@ -25,9 +24,6 @@ data class JourneyExpenseCreate(
 
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     val expenseDate: LocalDate,
-
-    @field:NotBlank
-    val currency: String,
 
     @field:NotNull
     @field:PositiveOrZero
@@ -66,14 +62,14 @@ data class JourneyExpenseCreate(
         }
     }
 
-    fun toEntity(journeyId: String, expensePayerId: Long): JourneyExpense {
+    fun toEntity(journeyId: String, baseCurrency: String, expensePayerId: Long): JourneyExpense {
         return JourneyExpense(
             journeyId = journeyId,
             expensePayerId = expensePayerId,
             category = category.value,
             categoryDescription = categoryDescription,
             expenseDate = expenseDate,
-            currency = currency,
+            baseCurrency = baseCurrency,
             amount = amount,
             remainingAmount = remainingAmount,
             memo = memo,

@@ -33,7 +33,7 @@ data class JourneyExpenseResponse(
             expenseDate = expense.expenseDate,
             category = expense.category,
             categoryDescription = expense.categoryDescription,
-            baseCurrency = expense.currency,
+            baseCurrency = expense.baseCurrency,
             amount = expense.amount.setScale(2),
             remainingAmount = expense.remainingAmount.setScale(2),
             memo = expense.memo,

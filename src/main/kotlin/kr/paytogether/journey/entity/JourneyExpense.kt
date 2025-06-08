@@ -22,7 +22,7 @@ data class JourneyExpense(
 
     val expenseDate: LocalDate,
 
-    val currency: String,
+    val baseCurrency: String,
 
     val amount: BigDecimal,
 

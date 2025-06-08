@@ -13,8 +13,6 @@ data class JourneyExpenseUpdate(
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     val expenseDate: LocalDate? = null,
 
-    val currency: String? = null,
-
     val amount: BigDecimal? = null,
 
     @field:Length(max = 25)

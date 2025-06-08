@@ -41,14 +41,7 @@ class JourneyExpenseService(
         val payer = memberMap[create.payerName] ?: throw NotFoundException("Payer not found by name: ${create.payerName}")
         require(payer.journeyMemberId != null) { "Payer id is null" }
 
-        // 요청 받은 멤버 수와 실제 멤버 수가 다름
-        if (create.members.size != memberMap.size)
-            throw BadRequestException(
-                ErrorCode.VALIDATION_ERROR,
-                "Members count is not matched, expected: ${memberMap.size}, actual: ${create.members.size}"
-            )
-
-        val expense = journeyExpenseRepository.save(create.toEntity(journeyId, payer.journeyMemberId))
+        val expense = journeyExpenseRepository.save(create.toEntity(journeyId, journey.baseCurrency, payer.journeyMemberId))
         require(expense.journeyExpenseId != null) { "Expense id is null" }
 
         val ledgers = listOf(
@@ -155,13 +148,6 @@ class JourneyExpenseService(
             ?: throw NotFoundException("Payer not found by name: ${update.payerName}")
         require(payer.journeyMemberId != null) { "Payer id is null" }
 
-        // 요청 받은 멤버 수와 실제 멤버 수가 다름
-        if (update.members.isNotEmpty() && update.members.size != memberMap.size)
-            throw BadRequestException(
-                ErrorCode.VALIDATION_ERROR,
-                "Members count is not matched, expected: ${memberMap.size}, actual: ${update.members.size}"
-            )
-
         // 요청 받은 금액과 멤버 금액 합계가 다름
         if (update.amount != null && update.amount notEqIgnoreScale update.members.sumOf { it.amount })
             throw BadRequestException(
@@ -174,7 +160,6 @@ class JourneyExpenseService(
                 expensePayerId = payer.journeyMemberId,
                 category = update.category ?: expense.category,
                 expenseDate = update.expenseDate ?: expense.expenseDate,
-                currency = update.currency ?: expense.currency,
                 amount = update.amount ?: expense.amount,
                 memo = update.memo ?: expense.memo,
             )

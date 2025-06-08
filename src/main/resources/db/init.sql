@@ -157,15 +157,15 @@ DELIMITER ;
 
 CREATE TABLE IF NOT EXISTS journey
 (
-    journey_id     VARCHAR(255)   NOT NULL PRIMARY KEY,
-    base_currency  VARCHAR(10)    NOT NULL DEFAULT 'USD',
-    exchange_rate  DECIMAL(32, 8) NOT NULL,
-    title          VARCHAR(255)   NOT NULL,
-    start_date     DATE           NOT NULL,
-    end_date       DATE           NOT NULL,
-    locale_code    VARCHAR(10)    NOT NULL,
-    closed_at      TIMESTAMP      NULL,
-    created_at     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
+    journey_id    VARCHAR(255)   NOT NULL PRIMARY KEY,
+    base_currency VARCHAR(10)    NOT NULL DEFAULT 'USD',
+    exchange_rate DECIMAL(32, 8) NOT NULL,
+    title         VARCHAR(255)   NOT NULL,
+    start_date    DATE           NOT NULL,
+    end_date      DATE           NOT NULL,
+    locale_code   VARCHAR(10)    NOT NULL,
+    closed_at     TIMESTAMP      NULL,
+    created_at    TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS journey_expense
     category             VARCHAR(100)   NOT NULL,
     category_description VARCHAR(255)   NOT NULL,
     expense_date         DATE           NOT NULL,
-    currency             VARCHAR(10)    NOT NULL,
+    base_currency        VARCHAR(10)    NOT NULL,
     amount               DECIMAL(32, 8) NOT NULL,
     remaining_amount     DECIMAL(32, 8) NOT NULL,
     memo                 VARCHAR(255),
