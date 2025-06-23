@@ -43,7 +43,7 @@ out/
 .env.paytogether
 
 ### Database ###
-db/mysql/
+misc/db
 
 ### Logs ###
 *.log
