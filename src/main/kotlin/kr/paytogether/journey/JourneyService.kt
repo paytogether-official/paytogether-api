@@ -124,7 +124,7 @@ class JourneyService(
             .collect()
 
         return JourneyResponse.of(
-            journeyRepository.save(journey.copy(startDate = update.startDate, endDate = update.endDate)),
+            journeyRepository.save(journey.copy(startDate = update.startDate, endDate = update.endDate, baseCurrency = update.baseCurrency)),
             journeyMemberRepository.findByJourneyId(journey.journeyId)
                 .map { JourneyMemberResponse.from(it) }
         )

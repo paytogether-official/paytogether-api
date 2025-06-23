@@ -1,5 +1,7 @@
 package kr.paytogether.journey.dto
 
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
@@ -10,6 +12,10 @@ data class JourneyUpdate(
 
     @field:DateTimeFormat(pattern = "yyyy-MM-dd")
     val endDate: LocalDate,
+
+    @field:NotBlank(message = "baseCurrency must not be blank")
+    @field:Pattern(regexp = "^[A-Z]{3}$", message = "baseCurrency must be a 3-letter currency code")
+    val baseCurrency: String,
 
     @field:Size(min = 0, max = 30, message = "members size must be between 0 and 30")
     val members: List<JourneyMemberCreate>
