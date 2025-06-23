@@ -118,13 +118,17 @@ class JourneyService(
             .toSet()
 
         update.members
-            .filterNot { memberNameSet.contains(it.name) }
-            .map { it.toEntity(journeyId) }
-            .let { journeyMemberRepository.saveAll(it) }
-            .collect()
+            ?.filterNot { memberNameSet.contains(it.name) }
+            ?.map { it.toEntity(journeyId) }
+            ?.let { journeyMemberRepository.saveAll(it) }
+            ?.collect()
 
         return JourneyResponse.of(
-            journeyRepository.save(journey.copy(startDate = update.startDate, endDate = update.endDate, baseCurrency = update.baseCurrency)),
+            journeyRepository.save(journey.copy(
+                startDate = update.startDate ?: journey.startDate,
+                endDate = update.endDate ?: journey.endDate,
+                baseCurrency = update.baseCurrency ?: journey.baseCurrency,
+            )),
             journeyMemberRepository.findByJourneyId(journey.journeyId)
                 .map { JourneyMemberResponse.from(it) }
         )

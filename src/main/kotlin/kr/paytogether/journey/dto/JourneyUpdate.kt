@@ -8,21 +8,20 @@ import java.time.LocalDate
 
 data class JourneyUpdate(
     @field:DateTimeFormat(pattern = "yyyy-MM-dd")
-    val startDate: LocalDate,
+    val startDate: LocalDate? = null,
 
     @field:DateTimeFormat(pattern = "yyyy-MM-dd")
-    val endDate: LocalDate,
+    val endDate: LocalDate? = null,
 
-    @field:NotBlank(message = "baseCurrency must not be blank")
-    @field:Pattern(regexp = "^[A-Z]{3}$", message = "baseCurrency must be a 3-letter currency code")
-    val baseCurrency: String,
+    val baseCurrency: String? = null,
 
     @field:Size(min = 0, max = 30, message = "members size must be between 0 and 30")
-    val members: List<JourneyMemberCreate>
+    val members: List<JourneyMemberCreate>? = null,
 ) {
     init {
-        require(!members.hasDuplicateName()) { "중복된 이름이 존재합니다." }
-        require(startDate.isBefore(endDate)) { "시작일은 종료일보다 이전이어야 합니다." }
+        require(members == null || !members.hasDuplicateName()) { "중복된 이름이 존재합니다." }
+        require(startDate == null || endDate == null || startDate.isBefore(endDate)) { "시작일은 종료일보다 이전이어야 합니다." }
+        require(baseCurrency == null || "^[A-Z]{3}$".toRegex().matches(baseCurrency)) { "baseCurrency must be a 3-letter currency code" }
     }
 
     private fun List<JourneyMemberCreate>.hasDuplicateName() =
