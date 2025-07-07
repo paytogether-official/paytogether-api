@@ -41,7 +41,7 @@ class WebSecurityConfig {
         val configuration = CorsConfiguration().also {
             it.addAllowedOriginPattern("*paytogether.kr*")
             it.addAllowedOriginPattern("http://localhost:3000*")
-            it.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            it.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             it.allowedHeaders = listOf("*")
             it.allowCredentials = true
             it.maxAge = 3600L
