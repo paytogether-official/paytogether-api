@@ -22,7 +22,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Service
-class JourneyExpenseService(
+open class JourneyExpenseService(
     private val journeyRepository: JourneyRepository,
     private val journeyMemberRepository: JourneyMemberRepository,
     private val journeyExpenseRepository: JourneyExpenseRepository,
@@ -30,7 +30,7 @@ class JourneyExpenseService(
 ) {
 
     @Transactional
-    suspend fun createExpense(journeyId: String, create: JourneyExpenseCreate): JourneyExpenseResponse {
+    open suspend fun createExpense(journeyId: String, create: JourneyExpenseCreate): JourneyExpenseResponse {
         val journey = journeyRepository.findByJourneyId(journeyId) ?: throw NotFoundException("Journey not found by id: $journeyId")
         if (journey.closedAt != null) {
             throw BadRequestException(ErrorCode.VALIDATION_ERROR, "Journey is already closed: $journeyId")
@@ -68,7 +68,7 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenses(
+    open suspend fun getExpenses(
         journeyId: String,
         quoteCurrency: String,
         category: String?,
@@ -122,7 +122,7 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpense(journeyId: String, journeyExpenseId: Long, quoteCurrency: String): JourneyExpenseWithMembersResponse {
+    open suspend fun getExpense(journeyId: String, journeyExpenseId: Long, quoteCurrency: String): JourneyExpenseWithMembersResponse {
         val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, journeyExpenseId)
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
 
@@ -154,7 +154,7 @@ class JourneyExpenseService(
     }
 
     @Transactional
-    suspend fun updateExpense(journeyId: String, expenseId: Long, update: JourneyExpenseUpdate): JourneyExpenseResponse {
+    open suspend fun updateExpense(journeyId: String, expenseId: Long, update: JourneyExpenseUpdate): JourneyExpenseResponse {
         val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, expenseId)
             ?: throw NotFoundException("Expense not found by id: $expenseId")
         require(expense.journeyExpenseId != null) { "Expense id is null" }
@@ -177,6 +177,7 @@ class JourneyExpenseService(
             expense.copy(
                 expensePayerId = payer.journeyMemberId,
                 category = update.category ?: expense.category,
+                categoryDescription = update.categoryDescription ?: expense.categoryDescription,
                 expenseDate = update.expenseDate ?: expense.expenseDate,
                 amount = update.amount ?: expense.amount,
                 memo = update.memo ?: expense.memo,
@@ -210,7 +211,7 @@ class JourneyExpenseService(
     }
 
     @Transactional
-    suspend fun deleteExpense(journeyId: String, journeyExpenseId: Long) {
+    open suspend fun deleteExpense(journeyId: String, journeyExpenseId: Long) {
         val expense = journeyExpenseRepository.findByJourneyIdAndJourneyExpenseIdAndDeletedAtIsNull(journeyId, journeyExpenseId)
             ?: throw NotFoundException("Expense not found by id: $journeyExpenseId")
         require(expense.journeyExpenseId != null) { "Expense id is null" }
@@ -219,7 +220,7 @@ class JourneyExpenseService(
     }
 
     @Transactional(readOnly = true)
-    suspend fun getExpenseCategories(journeyId: String): List<String> =
+    open suspend fun getExpenseCategories(journeyId: String): List<String> =
         journeyExpenseRepository.findDistinctByJourneyIdAndDeletedAtIsNull(journeyId)
             .map { Category.fromValue(it) }
             .sortedBy { it.sort }

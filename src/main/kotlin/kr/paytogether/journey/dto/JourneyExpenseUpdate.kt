@@ -10,6 +10,9 @@ data class JourneyExpenseUpdate(
 
     val category: String? = null,
 
+    @field:Length(max = 255)
+    val categoryDescription: String? = null,
+
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     val expenseDate: LocalDate? = null,
 
