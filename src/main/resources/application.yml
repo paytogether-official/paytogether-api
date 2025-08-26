@@ -47,5 +47,16 @@ paytogether:
 
 logging:
   level:
+    org.springframework.r2dbc.core: info
+    feign: info
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
     org.springframework.r2dbc.core: debug
     feign: debug
