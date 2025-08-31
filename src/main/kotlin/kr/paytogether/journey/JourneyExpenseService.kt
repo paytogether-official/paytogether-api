@@ -167,7 +167,7 @@ open class JourneyExpenseService(
         require(payer.journeyMemberId != null) { "Payer id is null" }
 
         // 요청 받은 금액과 멤버 금액 합계가 다름
-        if (update.amount != null && update.amount notEqIgnoreScale update.members.sumOf { it.amount })
+        if (update.amount != null && update.amount notEqIgnoreScale update.members.sumOf { it.amount } + update.remainingAmount)
             throw BadRequestException(
                 ErrorCode.VALIDATION_ERROR,
                 "Amount is not matched, expected: ${update.amount}, actual: ${update.members.sumOf { it.amount }}"
