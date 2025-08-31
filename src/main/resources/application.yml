@@ -49,8 +49,10 @@ logging:
   level:
     org.springframework.r2dbc.core: info
     feign: info
-
 ---
+server:
+  port: 8081
+
 spring:
   config:
     activate:

@@ -23,9 +23,13 @@ class SlackEventListener(
 
     @EventListener(SlackEvent::class)
     fun slackEventListener(event: SlackEvent) = applicationScope.launch {
-        val url = slackProperties.webhook[event.topic]?.url ?: throw PaytogetherException(ErrorCode.SERVER_ERROR, "No webhook url for ${event.topic}")
+        val url = slackProperties.webhook[event.topic]?.url ?: throw PaytogetherException(
+            ErrorCode.SERVER_ERROR,
+            "No webhook url for ${event.topic}"
+        )
 
-        val payload: Payload = payload { p -> p
+        val payload: Payload = payload { p ->
+            p
 //            .blocks(
 //                withBlocks {
 //                    context {
@@ -35,17 +39,20 @@ class SlackEventListener(
 //                    }
 //                }
 //            )
-            .attachments(
-                listOf(attachment { a -> a
-                    .pretext(event.title)
-                    .title(event.message)
-                    .authorName("Paytogether")
-                    .color(event.color.value)
-                    .mrkdwnIn(listOf("text"))
-                    .text("``` ${event.details?.slice(0..680)} ```")
-                    .fields(event.fields.map { it.toField() })
-                })
-            )
+                .attachments(
+                    listOf(attachment { a ->
+                        a
+                            .pretext(event.title)
+                            .title(event.message)
+                            .authorName("Paytogether")
+                            .color(event.color.value)
+                            .mrkdwnIn(listOf("text"))
+                            .text(event.details?.take(681)
+                                ?.let { "``` $it ```" }
+                                ?: "``` no details ```")
+                            .fields(event.fields.map { it.toField() })
+                    })
+                )
         }
 
         slack.send(url, payload)
