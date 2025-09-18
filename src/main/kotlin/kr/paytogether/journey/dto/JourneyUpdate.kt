@@ -20,7 +20,7 @@ data class JourneyUpdate(
 ) {
     init {
         require(members == null || !members.hasDuplicateName()) { "중복된 이름이 존재합니다." }
-        require(startDate == null || endDate == null || startDate.isBefore(endDate)) { "시작일은 종료일보다 이전이어야 합니다." }
+        require(startDate == null || endDate == null || startDate <= endDate) { "시작일은 종료일보다 이전이거나 같아야 합니다. startDate: $startDate, endDate: $endDate" }
         require(baseCurrency == null || "^[A-Z]{3}$".toRegex().matches(baseCurrency)) { "baseCurrency must be a 3-letter currency code" }
     }
 

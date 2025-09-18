@@ -34,7 +34,7 @@ data class JourneyCreate(
 ) {
     init {
         require(!members.hasDuplicateName()) { "중복된 이름이 존재합니다." }
-        require(startDate.isBefore(endDate)) { "시작일은 종료일보다 이전이어야 합니다." }
+        require(startDate <= endDate) { "시작일은 종료일보다 이전이거나 같아야 합니다. startDate: $startDate, endDate: $endDate" }
     }
 
     fun toEntity(slug: String) = Journey(
