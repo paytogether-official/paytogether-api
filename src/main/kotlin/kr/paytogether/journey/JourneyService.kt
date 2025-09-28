@@ -127,7 +127,7 @@ class JourneyService(
             journeyRepository.save(journey.copy(
                 startDate = update.startDate ?: journey.startDate,
                 endDate = update.endDate ?: journey.endDate,
-                baseCurrency = update.baseCurrency ?: journey.baseCurrency,
+                exchangeRate = update.exchangeRate ?: journey.exchangeRate,
             )),
             journeyMemberRepository.findByJourneyId(journey.journeyId)
                 .map { JourneyMemberResponse.from(it) }
