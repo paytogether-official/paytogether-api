@@ -62,11 +62,13 @@ jobs:
           fi
 
           echo "Adding new CloudFront IP rules..."
-          jq -r '.[] | .[]' merged-ips.json | while read ip; do
+          
+          jq -r '[.CLOUDFRONT_GLOBAL_IP_LIST[], .CLOUDFRONT_REGIONAL_EDGE_IP_LIST[]][]' cloudfront-ips.json | \
+          while read ip; do
             aws ec2 authorize-security-group-ingress \
-              --group-id $SECURITY_GROUP_ID \
+              --group-id "$SECURITY_GROUP_ID" \
               --protocol tcp --port 443 \
               --cidr "$ip" || true
           done
-
+  
           echo "✅ Security group updated successfully!"
