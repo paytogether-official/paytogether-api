@@ -38,6 +38,11 @@ jobs:
           echo "Downloaded CloudFront IP list"
           jq '.CLOUDFRONT_GLOBAL_IP_LIST, .CLOUDFRONT_REGIONAL_EDGE_IP_LIST' cloudfront-ips.json > merged-ips.json
 
+      - name: Debug Security Group ID
+        run: echo "SECURITY_GROUP_ID=${SECURITY_GROUP_ID}"
+        env:
+          SECURITY_GROUP_ID: ${{ secrets.CLOUDFRONT_SG_ID }}
+          
       - name: Update Security Group
         env:
           SECURITY_GROUP_ID: ${{ secrets.CLOUDFRONT_SG_ID }}
