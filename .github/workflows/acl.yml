@@ -45,13 +45,26 @@ jobs:
           
       - name: Update Security Group
         env:
-          SECURITY_GROUP_ID: sg-01021b724ac30544f
+          SECURITY_GROUP_ID: ${{ secrets.CLOUDFRONT_SG_ID }}
         run: |
+          echo "Revoking existing CloudFront IP rules..."
+          EXISTING_RULES=$(aws ec2 describe-security-groups --group-ids $SECURITY_GROUP_ID \
+            --query 'SecurityGroups[0].IpPermissions[?FromPort==`443` && ToPort==`443` && IpProtocol==`tcp`].IpRanges[].CidrIp' \
+            --output text)
+
+          if [ -n "$EXISTING_RULES" ]; then
+            for ip in $EXISTING_RULES; do
+              aws ec2 revoke-security-group-ingress \
+                --group-id $SECURITY_GROUP_ID \
+                --protocol tcp --port 443 \
+                --cidr $ip || true
+            done
+          fi
+
           echo "Adding new CloudFront IP rules..."
-          jq -r '[.CLOUDFRONT_GLOBAL_IP_LIST[], .CLOUDFRONT_REGIONAL_EDGE_IP_LIST[]][]' cloudfront-ips.json | \
-          while read ip; do
+          jq -r '.[] | .[]' merged-ips.json | while read ip; do
             aws ec2 authorize-security-group-ingress \
-              --group-id "$SECURITY_GROUP_ID" \
+              --group-id $SECURITY_GROUP_ID \
               --protocol tcp --port 443 \
               --cidr "$ip" || true
           done
