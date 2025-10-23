@@ -29,7 +29,7 @@ jobs:
 
       - name: Update Security Group
         env:
-          SECURITY_GROUP_ID: sg-xxxxxxxxxxxxxxxxx
+          SECURITY_GROUP_ID: ${{ secrets.CLOUDFRONT_SG_ID }}
         run: |
           # 현재 CloudFront 규칙 삭제
           echo "Revoking existing CloudFront IP rules..."
