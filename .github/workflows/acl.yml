@@ -45,7 +45,7 @@ jobs:
           
       - name: Update Security Group
         env:
-          SECURITY_GROUP_ID: sg-0123456789abcdef0
+          SECURITY_GROUP_ID: sg-01021b724ac30544f
         run: |
           echo "Adding new CloudFront IP rules..."
           jq -r '.[] | .[]' merged-ips.json | while read ip; do
